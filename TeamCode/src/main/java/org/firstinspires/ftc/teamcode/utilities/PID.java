@@ -3,14 +3,17 @@ public class PID  {
     private double KP;
     private double KI;
     private double KD;
-    private final long DT = 100;
     private double errorSum;
+    private double currentTime;
+    private double previousTime;
     private double previousError = 0;
     public PID(double KP,double KI,double KD){
         this.KP = KP;
         this.KI = KI;
         this.KD = KD;
         this.errorSum = 0;
+        this.currentTime = System.currentTimeMillis();
+        this.previousTime = 0;
     }
     public double getError(double current,double target){
 
@@ -18,13 +21,13 @@ public class PID  {
     }
     public double getPower(double error){
         errorSum += error;
+        currentTime = System.currentTimeMillis();
+        double DT = currentTime - previousTime;
         double P = error;
         double I = errorSum;
         double D = (error - previousError)/DT;
         previousError = error;
-        try{
-        wait(DT);
-        }catch(Exception e){ }
+        previousTime = System.currentTimeMillis();
 
         return P*KP + I*KI + D*KD;
     }

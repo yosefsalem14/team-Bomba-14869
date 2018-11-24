@@ -58,16 +58,16 @@ public class robot {
             //run them without an encoder
             for(int i =0;i<mainMotors.length;i++){
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                mainMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
             //set the direction
-            for(int i =0;i<mainMotors.length;i++){
-                if((i & 0x1)==0)
-                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-                else
-                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
-                mainMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            }
+//            for(int i =0;i<mainMotors.length;i++){
+//                if((i & 0x1)==0)
+//                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
+//                else
+//                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+//
+//            }
         }catch(Exception notF){
             for(int i =0;i<mainMotors.length;i++){
                 mainMotors[i]=null;

@@ -4,6 +4,8 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.utilities.PID;
 @Autonomous(name="TEST AUTONOMOUS")
 /*
@@ -11,38 +13,47 @@ import org.firstinspires.ftc.teamcode.utilities.PID;
     NEEDS TESTING
  */
 public class auto extends LinearOpMode {
-    private final double MAGIC_NUMBER = 5000;
+    private final double MAGIC_NUMBER = 100;
     private robot rover = new robot();
-    PID turn = new PID(0.0002,0.0,0.00646);
-    PID move = new PID(0.1,0.0,0.1);
+    private ElapsedTime matchTime = new ElapsedTime();
+    PID turn = new PID(0.01049998542908,0.0,0.0000988/58);
+    PID move = new PID(0.56,0.0,0.81);
+        //0.016302
+
     @Override
     public void runOpMode(){
         rover.init(hardwareMap);
+        matchTime.reset();
         waitForStart();
-        while(opModeIsActive()){
-            telemetry.addData("angle",rover.getAngle());
-            telemetry.update();
-        }
+        turn(90,1);
+
     }
 
-    public void moveForwards(double goal){
+    public void moveForwards(double goal,double dir){
         rover.resetEncoders();
-        double dist = Math.abs(goal*MAGIC_NUMBER) - rover.getDistance();
+        double dist = Math.abs(goal*MAGIC_NUMBER) - Math.abs(rover.getDistance());
         double power = move.getPower(dist);
-        while(Math.abs(power)>0.05 && opModeIsActive()){
-         rover.setMainMovePower(power);
-         dist = Math.abs(goal*MAGIC_NUMBER) - rover.getDistance();
+        while(Math.abs(dist)>0.05 && opModeIsActive()){
+         rover.setMainMovePower(power*dir);
+            telemetry.addData("goal",goal);
+            telemetry.addData("current",rover.getDistance());
+            telemetry.update();
+         dist = Math.abs(goal*MAGIC_NUMBER) - Math.abs(rover.getDistance());;
          power = move.getPower(dist);
         }
         rover.setMainMovePower(0);
     }
-    public void turn(double goal){
+    public void turn(double goal,double dir){
         rover.resetEncoders();
-        double dist = Math.abs(goal) - rover.getAngle();
+        double dist = Math.abs(goal) - Math.abs(rover.getAngle());
         double power = turn.getPower(dist);
-        while(Math.abs(power)>0.05 && opModeIsActive()){
-            rover.setMainTurnPower(power);
-            dist = Math.abs(goal) - rover.getAngle();
+        while(Math.abs(dist)>0 && opModeIsActive()){
+            rover.setMainTurnPower(power*dir);
+            telemetry.addData("goal",goal);
+            telemetry.addData("current",rover.getAngle());
+            telemetry.addData("difference",Math.abs(dist));
+            telemetry.update();
+            dist = Math.abs(goal) - Math.abs(rover.getAngle());
             power = turn.getPower(dist);
         }
         rover.setMainMovePower(0);

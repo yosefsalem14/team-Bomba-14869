@@ -31,7 +31,6 @@ public class RoverMovement extends LinearOpMode {
         //define controller input variables
             double move =            0.0;
             boolean latchOpen = false;
-            boolean latching = false;
             double armMove =         0.0;
             double turn =            0.0;
             double leftBumper =      0.0;
@@ -79,11 +78,10 @@ public class RoverMovement extends LinearOpMode {
                     collect = com2RightBumper - com2LeftBumper;
 
                 //open and close the latches
-                boolean APressed = gamepad2.x;
+                    boolean APressed = gamepad2.x;
                 if(APressed){
                     if(once) {
                         latchOpen = !latchOpen;
-                        latching = !latching;
                         once=!once;
                     }
                 }else{
@@ -119,18 +117,8 @@ public class RoverMovement extends LinearOpMode {
              */
             //arm  movement
             for (int i = 0; i < rover.armMotors.length; i++) {
-                if(latching) {
-                    if (armMove > 0) {
-                        rover.armMotors[i].setPower(armMove *
-                                rover.armPower);
-                    } else {
-                        rover.armMotors[i].setPower(armMove *
-                                rover.armPower/7);
-                    }
-                }else{
                     rover.armMotors[i].setPower(armMove *
                             rover.armPower);
-                }
             }
 
             //collector movement
