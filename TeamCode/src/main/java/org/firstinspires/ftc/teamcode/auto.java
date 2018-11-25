@@ -24,6 +24,8 @@ public class auto extends LinearOpMode {
     public void runOpMode(){
         rover.init(hardwareMap);
         matchTime.reset();
+        telemetry.addData("status","ready for start!");
+        telemetry.update();
         waitForStart();
         turn(90,1);
 

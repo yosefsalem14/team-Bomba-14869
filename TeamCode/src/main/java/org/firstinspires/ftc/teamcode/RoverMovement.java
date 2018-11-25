@@ -44,9 +44,10 @@ public class RoverMovement extends LinearOpMode {
             double collect =         0.0;
         for(int i =0;i<rover.latches.length;i++){
             rover.latches[i].setDirection(Servo.Direction.FORWARD);
-            rover.latches[i].setPosition(0.7);
         }
         boolean once = true;
+        telemetry.addData("status","ready for start!");
+        telemetry.update();
         waitForStart();
         while(opModeIsActive()) {
 
