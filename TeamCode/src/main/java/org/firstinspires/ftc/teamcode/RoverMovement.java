@@ -67,9 +67,9 @@ public class RoverMovement extends LinearOpMode {
 
                 //calculate the turn & strafe & move factor
 
-                    move =     -gamepad1.left_stick_y;
-                    turn =     rightTrigger - leftTrigger;
-                    strafe =   rightBumper - leftBumper;
+                    move =     (-gamepad1.left_stick_y)*rover.movePower;
+                    turn =     (rightTrigger - leftTrigger)*rover.turnPower;
+                    strafe =   (rightBumper - leftBumper)*rover.strafePower;
 
 
 
@@ -95,13 +95,13 @@ public class RoverMovement extends LinearOpMode {
               */
             //calculate the specific motor power
                 double leftBack =   Range.clip(move - turn + strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
                 double leftFront =  Range.clip(move - turn - strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
                 double rightBack =  Range.clip(move + turn - strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
                 double rightFront = Range.clip(move + turn + strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
 
 
             //do the movements:

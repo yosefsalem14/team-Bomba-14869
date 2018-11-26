@@ -6,7 +6,7 @@ public class PID  {
     private double errorSum;
     private double currentTime;
     private double previousTime;
-    private double previousError = 0;
+    private double previousError;
     public PID(double KP,double KI,double KD){
         this.KP = KP;
         this.KI = KI;
@@ -47,7 +47,8 @@ public class PID  {
         this.KD = KD;
     }
     public void reset(){
-        previousError = 0;
-        errorSum = 0;
+        this.previousError = 0;
+        this.errorSum = 0;
+        this.previousTime = 0;
     }
 }
