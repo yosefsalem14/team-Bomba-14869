@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-
-public class robot {
+//TODO REMOVE AUTO FUNCTIONS AND MOVE THEM TO THE AUTONOMOUS/COMMAND CLASSES
+public class Robot {
      DcMotor[] mainMotors = null;
 
      DcMotor[] armMotors =  null;
@@ -23,13 +23,12 @@ public class robot {
 
      Servo[] latches =      null;
    //  CRServo backMotor = null;
-
     /** Define the powers
      *
      */
-    final double movePower = 0.6;
-    final double turnPower = 0.6;
-    final double strafePower = 0.6;
+    final double movePower = 0.7;
+    final double turnPower = 1;
+    final double strafePower = 0.9;
     final double armPower = 0.6;
     final double collectPower = 1;
     final double stretchPower = 1;
@@ -41,7 +40,7 @@ public class robot {
     /**
      * initialise the robot class
      */
-    public robot(){
+    public Robot(){
         mainMotors = new DcMotor[4];
         armMotors  = new DcMotor[2];
         latches    = new Servo[2];

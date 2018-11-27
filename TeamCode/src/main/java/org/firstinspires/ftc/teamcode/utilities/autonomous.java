@@ -20,7 +20,10 @@ public abstract class autonomous extends LinearOpMode {
     // State used for updating telemetry
     //these values wont work!
     //TODO:
-    //-calculate the magic number [ ]
+    //VERY IMPORTANT:
+    //REFACTOR EVERYTHING, MAKE IT READABLE, TIDY THINGS UP
+    //FIX CODE, TRANSFER THE AUTO CODE TO HERE AND PUT THE
+    // MAGIC NUMBER CALC
     public void getIMU(){
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
@@ -29,6 +32,10 @@ public abstract class autonomous extends LinearOpMode {
         parameters.loggingTag          = "IMU";
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+    }
+    public void reset(){
+        motorTurn.reset();
+        motorDist.reset();
     }
     public void initialize(){
          angles=new Orientation();
@@ -39,8 +46,9 @@ public abstract class autonomous extends LinearOpMode {
     public void turn(commands[] comms,double angle,double timeout){
 
         if (opModeIsActive()) {
+            reset();
             for(commands command : comms) {
-                command.init((angles.firstAngle+angle));//SET TARGET SO IT DOESN'T CRASH,
+                command.init(0);//SET TARGET SO IT DOESN'T CRASH,
                 //// THIS IS POINTLESS
             }
 
@@ -70,9 +78,8 @@ public abstract class autonomous extends LinearOpMode {
                         command.updatePower(Math.abs(angle)-Math.abs(angles.firstAngle));
                     }
                     idle();
-
              }
-
+                //MIGHT REMOVE STOP!
             //stop all motors
             for(commands command:comms) {
                 command.stop();
@@ -96,6 +103,7 @@ public abstract class autonomous extends LinearOpMode {
     public void execute(commands[] comms,double distance,double timeout) {
 
         if (opModeIsActive()) {
+            reset();
             for(commands command : comms) {
                 command.init(distance);
             }
@@ -114,15 +122,14 @@ public abstract class autonomous extends LinearOpMode {
             for(commands command:comms) {
                 while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
+                    double power = motorDist.getPower(command.getDist(0));
                     for(commands c:comms){
-                        c.updatePower(motorDist.getPower(command.getDist(0)));
+                        c.updatePower(power);
                     }
                     //work until all the motors stop or until the time runs out
                     telemetry.addData("status", "busy");
-                    telemetry.addData("encoder reading",command.getMotors()[0].getCurrentPosition());
-                    telemetry.addData("encoder reading",command.getMotors()[0].getTargetPosition());
-                    telemetry.addData("dist",
-                            motorDist.getPower(command.getDist(0)));
+                    telemetry.addData("power!",
+                            power);
                     telemetry.update();
                     canRun = isBusy(command, 0);
                     idle();
@@ -151,10 +158,6 @@ public abstract class autonomous extends LinearOpMode {
         if(i<=command.getMotors().length-1)
             return command.canMove() && isBusy(command,i+1);
         return true;
-    }
-    public enum type{
-        MOVE,
-        TURN,
     }
     public void autoDrive(type T,commands[] command,double dist,double time){
         if(T==T.MOVE){

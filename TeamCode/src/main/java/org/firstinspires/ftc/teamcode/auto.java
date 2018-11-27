@@ -5,20 +5,21 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
+import com.qualcomm.robotcore.util.ThreadPool;
 import org.firstinspires.ftc.teamcode.utilities.PID;
 @Autonomous(name="TEST AUTONOMOUS")
 /*
     a testing module for the autonomous class
     NEEDS TESTING
  */
+
 public class auto extends LinearOpMode {
     static final double     COUNTS_PER_MOTOR_REV    = 1680 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     MAGIC_NUMBER         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/
             (WHEEL_DIAMETER_INCHES * 3.1415);
-    private robot rover = new robot();
+    private Robot rover = new Robot();
     private ElapsedTime matchTime = new ElapsedTime();
     PID turn = new PID(0.01049998542908,0.0,0.0000988/58);
     PID move = new PID(0.004854899,0.0,0.000004959);
@@ -51,6 +52,7 @@ public class auto extends LinearOpMode {
          dist = Math.abs(goal*MAGIC_NUMBER) - Math.abs(rover.getDistance());;
          power = move.getPower(dist);
         }
+
         rover.setMainMovePower(0);
     }
     public void turn(double goal,double dir){

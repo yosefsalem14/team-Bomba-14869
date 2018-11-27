@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.ThreadPool;
+import java.util.concurrent.Future;
 /*
     ///////main TeleOP class/////
     this will be used for the main robot
@@ -22,12 +24,11 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="rover movement",group="movement")
 
 public class RoverMovement extends LinearOpMode {
-    robot rover = new robot();
+    Robot rover = new Robot();
 
     @Override
     public void runOpMode(){//throws InterruptedException {
         rover.init(hardwareMap);
-
         //define controller input variables
             double move =            0.0;
             boolean latchOpen = false;
@@ -45,6 +46,7 @@ public class RoverMovement extends LinearOpMode {
         for(int i =0;i<rover.latches.length;i++){
             rover.latches[i].setDirection(Servo.Direction.FORWARD);
         }
+
         boolean once = true;
         telemetry.addData("status","ready for start!");
         telemetry.update();
@@ -187,7 +189,6 @@ public class RoverMovement extends LinearOpMode {
             telemetry.addData("collector",
                     "collector value= " +
                             formatString(collect));
-
             telemetry.addLine();
 
 
@@ -195,6 +196,8 @@ public class RoverMovement extends LinearOpMode {
                     "running");
             telemetry.update();
         }
+
+
     }
     public String formatString(double value){
         return (Math.abs(Math.floor(value*100)) + "%");

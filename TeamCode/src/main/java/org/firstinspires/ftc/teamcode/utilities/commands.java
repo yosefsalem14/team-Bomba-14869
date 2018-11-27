@@ -8,10 +8,8 @@ public  class commands  {
     //warning: using the same motors with different commands will result in complications
 
     //TODO:
-    //-all done [☺]
-    //-calculate magic number[ ]
-    //-maybe add an interrupt function [ ]
-    //-make a custom way of moving to goal [☺]
+    //FIX THE FUNCTIONS, TAKE A LOOK AT EVERYTHING,
+    // ADD MAGIC NUMBER
     private DcMotor[] motors;
     private double power;
     private int targetMotor ;
@@ -73,11 +71,7 @@ public  class commands  {
     }
     public double getDist(int i){
         double current = Math.abs(this.getMotors()[i].getCurrentPosition());
-
-
         double target = Math.abs(this.getMotors()[i].getTargetPosition());
-
-
         return (target-current);
     }
 }
