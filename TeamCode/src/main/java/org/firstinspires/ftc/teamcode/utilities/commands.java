@@ -10,10 +10,14 @@ public  class commands  {
     //TODO:
     //FIX THE FUNCTIONS, TAKE A LOOK AT EVERYTHING,
     // ADD MAGIC NUMBER
+    static final double     COUNTS_PER_MOTOR_REV    = 1680 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+    static final double     MAGIC_NUMBER         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/
+            (WHEEL_DIAMETER_INCHES * 3.1415);
     private DcMotor[] motors;
     private double power;
     private int targetMotor ;
-    private static final double MAGIC_NUMBER = 500;
     public commands(DcMotor[] motors,double power){
         this.motors = motors;
         this.power = power;
@@ -30,15 +34,15 @@ public  class commands  {
     //functions:
     //execute the command, in this case, it's just move to position
     public void execute() {
-        for (int i = 0;i<this.motors.length;i++) {
-                motors[i].setPower(this.power);
+        for (DcMotor motor :this.motors) {
+                motor.setPower(this.power);
         }
     }
 
     //stop executing the command,this makes sure all the motors stop
     public void stop(){
-        for (int i = 0;i<this.motors.length;i++) {
-            motors[i].setPower(0);
+        for (DcMotor motor :this.motors) {
+            motor.setPower(0);
         }
     }
     //initialize the command,I.e, calculate the distance and change the run mode
@@ -47,8 +51,7 @@ public  class commands  {
         //reset the encoder, change the behaviour, calculate position
         //then set the target position and change the mode
         motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-  //      motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-   //     motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         int pos = motors[i].getCurrentPosition() + (int) ((dst) * MAGIC_NUMBER);
         motors[i].setTargetPosition(pos);
         motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -62,7 +65,7 @@ public  class commands  {
     public boolean canMove() {
         boolean execute = true;
         for(int i =0;i<this.getMotors().length;i++){
-            if(getDist(i)<=0){
+            if(getDist(i)<=5){
                 execute = false;
                 targetMotor = i;
             }

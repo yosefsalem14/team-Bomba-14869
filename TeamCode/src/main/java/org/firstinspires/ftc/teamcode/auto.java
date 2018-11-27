@@ -21,7 +21,7 @@ public class auto extends LinearOpMode {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     private Robot rover = new Robot();
     private ElapsedTime matchTime = new ElapsedTime();
-    PID turn = new PID(0.01049998542908,0.0,0.0000988/58);
+    PID turn = new PID(0.01049998542908,0.0,0.000098858);
     PID move = new PID(0.004854899,0.0,0.000004959);
         //0.016302
 

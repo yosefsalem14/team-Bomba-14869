@@ -20,7 +20,6 @@ public class Robot {
      DcMotor collector =    null;
 
     BNO055IMU imu=null;
-
      Servo[] latches =      null;
    //  CRServo backMotor = null;
     /** Define the powers
