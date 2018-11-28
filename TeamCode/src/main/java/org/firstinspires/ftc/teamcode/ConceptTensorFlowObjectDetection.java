@@ -163,7 +163,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
+        
         // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
     }
 

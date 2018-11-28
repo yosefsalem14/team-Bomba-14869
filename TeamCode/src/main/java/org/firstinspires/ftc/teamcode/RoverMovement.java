@@ -12,12 +12,6 @@ import java.util.concurrent.Future;
     ///////main TeleOP class/////
     this will be used for the main robot
     TODO:
-    -work on the main robots [☺]
-    -work on the arm motors[☺]
-    -work on the extender motors[☺]
-    -find the ideal power values[☺]
-
-
     this is almost done, just fix the comments!
  */
 
@@ -157,10 +151,6 @@ public class RoverMovement extends LinearOpMode {
                         "idle");
 
 
-            telemetry.addLine();
-            telemetry.addData("servo position1",rover.latches[0].getPosition());
-            telemetry.addData("servo position1",rover.latches[1].getPosition());
-            telemetry.addLine();
 
             //show all the input values
             telemetry.addData("move",
