@@ -16,6 +16,8 @@ public class TestMovement extends LinearOpMode {
         backRight   = hardwareMap.get(DcMotor.class,"backRight");
         frontLeft   = hardwareMap.get(DcMotor.class,"frontLeft");
         frontRight = hardwareMap.get(DcMotor.class,"frontRight");
+        telemetry.addData("status","ready");
+        telemetry.update();
         waitForStart();
         while(opModeIsActive()){
             double move = -gamepad1.left_stick_y;

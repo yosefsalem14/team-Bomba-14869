@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-
-public class robot {
+//TODO REMOVE AUTO FUNCTIONS AND MOVE THEM TO THE AUTONOMOUS/COMMAND CLASSES
+public class Robot {
      DcMotor[] mainMotors = null;
 
      DcMotor[] armMotors =  null;
@@ -20,17 +20,15 @@ public class robot {
      DcMotor collector =    null;
 
     BNO055IMU imu=null;
-
      Servo[] latches =      null;
    //  CRServo backMotor = null;
-
     /** Define the powers
      *
      */
-    final double movePower = 0.6;
-    final double turnPower = 0.6;
+    final double movePower = 0.7;
+    final double turnPower = 1;
     final double strafePower = 0.6;
-    final double armPower = 0.6;
+    final double armPower = 0.7;
     final double collectPower = 1;
     final double stretchPower = 1;
     /**
@@ -41,7 +39,7 @@ public class robot {
     /**
      * initialise the robot class
      */
-    public robot(){
+    public Robot(){
         mainMotors = new DcMotor[4];
         armMotors  = new DcMotor[2];
         latches    = new Servo[2];
@@ -60,16 +58,15 @@ public class robot {
             //run them without an encoder
             for(int i =0;i<mainMotors.length;i++){
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                mainMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
             //set the direction
-//            for(int i =0;i<mainMotors.length;i++){
-//                if((i & 0x1)==0)
-//                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-//                else
-//                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
-//
-//            }
+            for(int i =0;i<mainMotors.length;i++){
+                if((i & 0x1)==0)
+                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
+                else
+                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+
+            }
         }catch(Exception notF){
             for(int i =0;i<mainMotors.length;i++){
                 mainMotors[i]=null;
@@ -144,49 +141,6 @@ public class robot {
             }
         }
 
-        try{
-            BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-            parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
-            parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-            parameters.loggingEnabled      = true;
-            parameters.loggingTag          = "IMU";
-            imu = hw.get(BNO055IMU.class, "imu");
-            imu.initialize(parameters);
-        }catch(Exception notF){
-            imu = null;
-        }
 
-    }
-    public void resetEncoders(){
-        for(int i =0;i<mainMotors.length;i++){
-            mainMotors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-    }
-    public double getDistance(){
-        return mainMotors[0].getCurrentPosition();
-    }
-    public void setMainMovePower(double power){
-        for(int i =0;i<mainMotors.length;i++){
-            mainMotors[i].setPower(power);
-        }
-    }
-    public double getAngle(){
-        double angle= imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-        return angle;
-    }
-    public void setMainTurnPower(double power){
-        for(int i =0;i<mainMotors.length;i++){
-            if((i&0x01)==0) {
-                mainMotors[i].setPower(power);
-            }else{
-                mainMotors[i].setPower(-power);
-            }
-        }
-    }
-    public void setMainStrafePower(double power){
-        for(int i =0;i<mainMotors.length;i++){
-            mainMotors[i].setPower(power);
-        }
     }
 }

@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.ThreadPool;
+import java.util.concurrent.Future;
 /*
     ///////main TeleOP class/////
     this will be used for the main robot
@@ -16,19 +18,16 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="rover movement",group="movement")
 
 public class RoverMovement extends LinearOpMode {
-    robot rover = new robot();
+    Robot rover = new Robot();
 
     @Override
     public void runOpMode(){//throws InterruptedException {
         rover.init(hardwareMap);
-
         //define controller input variables
             double move =            0.0;
             boolean latchOpen = false;
             double armMove =         0.0;
             double turn =            0.0;
-            double leftBumper =      0.0;
-            double rightBumper =     0.0;
             double strafe =          0.0;
             double leftTrigger =     0.0;
             double rightTrigger =    0.0;
@@ -39,6 +38,7 @@ public class RoverMovement extends LinearOpMode {
         for(int i =0;i<rover.latches.length;i++){
             rover.latches[i].setDirection(Servo.Direction.FORWARD);
         }
+
         boolean once = true;
         telemetry.addData("status","ready for start!");
         telemetry.update();
@@ -47,8 +47,6 @@ public class RoverMovement extends LinearOpMode {
 
             //get all the variables:
                 //parse the bumper clicks
-                    leftBumper =      (gamepad1.left_bumper ? 1 : 0);
-                    rightBumper =     (gamepad1.right_bumper ? 1 : 0);
                     com2LeftBumper =  (gamepad2.left_bumper ? 1 : 0);
                     com2RightBumper = (gamepad2.right_bumper ? 1 : 0);
 
@@ -63,12 +61,12 @@ public class RoverMovement extends LinearOpMode {
 
                     move =     (-gamepad1.left_stick_y)*rover.movePower;
                     turn =     (rightTrigger - leftTrigger)*rover.turnPower;
-                    strafe =   (rightBumper - leftBumper)*rover.strafePower;
+                    strafe =   (gamepad1.right_stick_x)*rover.strafePower;
 
 
 
                 //calculate the arm & stetcher & collector move factor+
-                    armMove = -gamepad2.left_stick_y;
+                    armMove = Math.pow(-gamepad2.left_stick_y,3);
                     strmove = gamepad2.right_stick_y;
                     collect = com2RightBumper - com2LeftBumper;
 
@@ -177,7 +175,6 @@ public class RoverMovement extends LinearOpMode {
             telemetry.addData("collector",
                     "collector value= " +
                             formatString(collect));
-
             telemetry.addLine();
 
 
@@ -185,6 +182,8 @@ public class RoverMovement extends LinearOpMode {
                     "running");
             telemetry.update();
         }
+
+
     }
     public String formatString(double value){
         return (Math.abs(Math.floor(value*100)) + "%");
