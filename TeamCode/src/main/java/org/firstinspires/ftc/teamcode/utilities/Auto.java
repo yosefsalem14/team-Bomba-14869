@@ -18,8 +18,6 @@ public abstract class Auto extends LinearOpMode {
     private PID motorTurn;
     private Orientation angles;
     private BNO055IMU imu;
-
-
     /* get the IMU sensor
 
      */
@@ -141,10 +139,11 @@ public abstract class Auto extends LinearOpMode {
                 while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
                     for(Commands command:comms) {
-                    double power = motorDist.getPower(command.getDist(0));
+                    double dist = command.getDist();
+                    double power = motorDist.getPower(dist);
                     command.updatePower(power);
                     //work until all the motors stop or until the time runs out
-                    telemetry.addData("dist", command.getDist(0));
+                    telemetry.addData("dist", dist);
                     telemetry.update();
                     canRun = isBusy(command, 0);
                     }

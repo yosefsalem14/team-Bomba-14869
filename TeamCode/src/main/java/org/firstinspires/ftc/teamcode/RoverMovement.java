@@ -34,8 +34,6 @@ public class RoverMovement extends LinearOpMode {
             boolean latchOpen = false;
             double armMove =         0.0;
             double turn =            0.0;
-            double leftBumper =      0.0;
-            double rightBumper =     0.0;
             double strafe =          0.0;
             double leftTrigger =     0.0;
             double rightTrigger =    0.0;
@@ -55,23 +53,21 @@ public class RoverMovement extends LinearOpMode {
 
             //get all the variables:
                 //parse the bumper clicks
-                    leftBumper =      (gamepad1.left_bumper ? 1 : 0);
-                    rightBumper =     (gamepad1.right_bumper ? 1 : 0);
                     com2LeftBumper =  (gamepad2.left_bumper ? 1 : 0);
                     com2RightBumper = (gamepad2.right_bumper ? 1 : 0);
 
 
 
                 //parse the trigger pushes
-                    leftTrigger =   Math.pow(gamepad1.left_trigger,3);
-                    rightTrigger =  Math.pow(gamepad1.right_trigger,3);
+                    leftTrigger =   gamepad1.left_trigger;
+                    rightTrigger =  gamepad1.right_trigger;
 
 
                 //calculate the turn & strafe & move factor
 
-                    move =     (Math.pow(-gamepad1.left_stick_y,3))*rover.movePower;
+                    move =     (-gamepad1.left_stick_y)*rover.movePower;
                     turn =     (rightTrigger - leftTrigger)*rover.turnPower;
-                    strafe =   (rightBumper - leftBumper)*rover.strafePower;
+                    strafe =   (gamepad1.right_stick_x)*rover.strafePower;
 
 
 

@@ -130,7 +130,7 @@ public class Commands  {
     public boolean canMove() {
         boolean execute = true;
         for(int i =0;i<this.getMotors().length;i++){
-            if(Math.abs(getDist(i))==0){
+            if(Math.abs(getDist())==0){
                 execute = false;
                 targetMotor = i;
             }
@@ -143,10 +143,18 @@ public class Commands  {
     /*
         returns the dist between the current encoder value and the desired dist
     */
-    public double getDist(int i){
-        double current = Math.abs(this.getMotors()[i].getCurrentPosition());
-        double target = Math.abs(this.getMotors()[i].getTargetPosition());
-        return (target-current);
+    public double getDist(){
+        double minDist = this.getMotors()[0].getTargetPosition();
+        double dist;
+        for(int i =0;i<this.getMotors().length;i++) {
+            double current = Math.abs(this.getMotors()[i].getCurrentPosition());
+            double target = Math.abs(this.getMotors()[i].getTargetPosition());
+            dist = target-current;
+            if(dist<minDist){
+                minDist = dist;
+            }
+        }
+        return (minDist);
     }
 }
 
