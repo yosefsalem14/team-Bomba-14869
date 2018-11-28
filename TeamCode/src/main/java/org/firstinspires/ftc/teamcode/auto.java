@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.utilities.PID;
     a testing module for the autonomous class
     NEEDS TESTING
  */
-
+//TODO: add comments, make this more readable and remove reduntant code!
 public class auto extends LinearOpMode {
     static final double     COUNTS_PER_MOTOR_REV    = 1680 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
