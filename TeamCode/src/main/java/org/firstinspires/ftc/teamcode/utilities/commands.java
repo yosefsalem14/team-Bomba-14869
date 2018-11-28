@@ -21,7 +21,7 @@ public class Commands  {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     private DcMotor[] motors;
     private double power;
-    private int targetMotor;//TODO: check what this does
+    private double minDist;
     private int direction = 0;
 
 
@@ -33,7 +33,7 @@ public class Commands  {
     public Commands(DcMotor[] motors,double power,Direction direction){
         this.motors = motors;
         this.power = power;
-        this.targetMotor = 0;
+        this.minDist = 80000000000000.0;
         switch(direction){
             case forward:
                 this.direction = 1;
@@ -132,7 +132,6 @@ public class Commands  {
         for(int i =0;i<this.getMotors().length;i++){
             if(Math.abs(getDist())==0){
                 execute = false;
-                targetMotor = i;
             }
         }
         return execute;
@@ -144,7 +143,6 @@ public class Commands  {
         returns the dist between the current encoder value and the desired dist
     */
     public double getDist(){
-        double minDist = this.getMotors()[0].getTargetPosition();
         double dist;
         for(int i =0;i<this.getMotors().length;i++) {
             double current = Math.abs(this.getMotors()[i].getCurrentPosition());

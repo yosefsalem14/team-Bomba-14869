@@ -135,17 +135,17 @@ public abstract class Auto extends LinearOpMode {
 //            }
             //Cait until the motors reach their goal
             //or until the time runs out
-            boolean canRun = true;
-                while (opModeIsActive() &&canRun&&
+                while (opModeIsActive() &&
                         runtime.seconds() < timeout) {
                     for(Commands command:comms) {
-                    double dist = command.getDist();
-                    double power = motorDist.getPower(dist);
-                    command.updatePower(power);
-                    //work until all the motors stop or until the time runs out
-                    telemetry.addData("dist", dist);
-                    telemetry.update();
-                    canRun = isBusy(command, 0);
+                    if(command.canMove()) {
+                        double dist = command.getDist();
+                        double power = motorDist.getPower(dist);
+                        command.updatePower(power);
+                        //work until all the motors stop or until the time runs out
+                        telemetry.addData("dist", dist);
+                        telemetry.update();
+                    }
                     }
                 }
 
@@ -165,6 +165,7 @@ public abstract class Auto extends LinearOpMode {
         encoders, the encoders are wired so each possible Commands array
         has at least one encoder.
      */
+    //////////MIGHT REMOVE LATER, FOUND A BETTER WAY///////
     public boolean isBusy(Commands command,int i){
         // checks if all the motors are busy
         if(i<=command.getMotors().length-1)
