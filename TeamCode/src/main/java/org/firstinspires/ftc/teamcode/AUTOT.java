@@ -16,17 +16,17 @@ public class AUTOT extends Auto{
         DcMotor[] right = {rover.mainMotors[0],rover.mainMotors[2]};
         DcMotor[] left = {rover.mainMotors[1],rover.mainMotors[3]};
         //TODO:fix command dir name
-        Commands rightFwd = new Commands(right,1,Commands.Direction.forward);
-        Commands rightRvrs = new Commands(right,1, Commands.Direction.reverse);
-        Commands leftFwd = new Commands(left,1, Commands.Direction.forward);
-        Commands leftrvrs = new Commands(left,1, Commands.Direction.reverse);
+        Commands rightFwd = new Commands(right,0.3,Commands.Direction.forward);
+        Commands rightRvrs = new Commands(right,0.3, Commands.Direction.reverse);
+        Commands leftFwd = new Commands(left,0.3, Commands.Direction.forward);
+        Commands leftrvrs = new Commands(left,0.3, Commands.Direction.reverse);
 
         Commands[] moveFwd = {rightFwd,leftFwd};
         Commands[] turnRight = {rightRvrs,leftFwd};
         telemetry.addData("status","ready");
         telemetry.update();
         waitForStart();
-        autoDrive(AutoDrivetype.ENCODER_MOVE,moveFwd,32,80);
+        autoDrive(AutoDrivetype.ENCODER_MOVE,moveFwd,8,80);
         autoDrive(AutoDrivetype.IMU_TURN,turnRight,90,80);
     }
 }

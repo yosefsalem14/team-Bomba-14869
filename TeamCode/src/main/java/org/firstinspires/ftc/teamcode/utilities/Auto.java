@@ -10,6 +10,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
+
+///LAST TODO: fix Direction handling
 public abstract class Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private PID motorDist;
@@ -46,8 +48,8 @@ public abstract class Auto extends LinearOpMode {
     public void initialize(){
          angles=new Orientation();
         getIMU();
-        motorDist = new PID(0.01009998542908,0.0,0.000098858);
-        motorTurn = new PID(0.004854899,0.0,0.000004959);
+        motorDist = new PID(0.03809998542908,0.0,0.005398858);
+        motorTurn = new PID(0.034854899,0.0,0.000564959);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
 
@@ -71,30 +73,34 @@ public abstract class Auto extends LinearOpMode {
             reset();
             //rest run time
             runtime.reset();
-            //set all Che powers
-            for(Commands command:comms) {
-                command.execute();
-            }
+            /*
+            command.execute() might be pointless here!
+            check it next time!
+            this is part of the new Direction handling :>
+             */
+//            //set all Che powers
+//            for(Commands command:comms) {
+//                command.execute();
+//            }
 
             //wait until the moto1rs reach their goal
             //or until the time runs out
 //            angle +=Math.abs(angles.firstAngle);
             //might add some offset to the confition, if a perfect PID isn't feasible
             boolean canRun;
-            canRun = Math.abs(angle)-Math.abs(angles.firstAngle)>=4;
+            canRun = Math.abs(angle)-Math.abs(angles.firstAngle)>0;
             while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
                     angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    double dist = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle));
+                    double dist = Math.abs(angle)-Math.abs(angles.firstAngle);
                     double power = motorTurn.getPower(dist);
-                    for(Commands command : comms){ command.updatePower(power);
-                    }
+                    for(Commands command : comms){command.updatePower(power);}
                     //work until all the motors stop or until the time runs out
                 telemetry.addData("angle",angles.firstAngle);
                     telemetry.addData("Target angle",angle);
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = dist>0;
+                    canRun = Math.abs(dist)>0;
              }
              for(Commands C : comms){
                 C.stop();
@@ -120,28 +126,32 @@ public abstract class Auto extends LinearOpMode {
             }
             //rest run time
             runtime.reset();
-            //set all the powers
-            for(Commands command:comms) {
-                command.execute();
-            }
+            /*
+            command.execute() might be pointless here!
+            check it next time!
+            this is part of the new Direction handling :>
+             */
+//            //set all powers
+//            for(Commands command:comms) {
+//                command.execute();
+//            }
             //Cait until the motors reach their goal
             //or until the time runs out
             boolean canRun = true;
-            for(Commands command:comms) {
                 while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
+                    for(Commands command:comms) {
                     double power = motorDist.getPower(command.getDist(0));
-                    for(Commands c:comms){
-                        c.updatePower(power);
-                    }
+                    command.updatePower(power);
                     //work until all the motors stop or until the time runs out
                     telemetry.addData("dist", command.getDist(0));
                     telemetry.update();
                     canRun = isBusy(command, 0);
+                    }
                 }
-            }
-            for(Commands C : comms){
-                C.stop();
+
+            for(Commands command : comms){
+                command.stop();
             }
             telemetry.addData("status","finished");
             telemetry.update();
