@@ -46,8 +46,8 @@ public abstract class Auto extends LinearOpMode {
     public void initialize(){
          angles=new Orientation();
         getIMU();
-        motorDist = new PID(0.03809998542908,0.0,0.005398858);
-        motorTurn = new PID(0.034854899,0.0,0.000564959);
+        motorDist = new PID(0.002090064,0.0,0.00006899);
+        motorTurn = new PID(0.020599489,0.0,0.000454959);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
 
@@ -66,7 +66,6 @@ public abstract class Auto extends LinearOpMode {
         (if the timer count exceeds timeout)
      */
     public void turn(Commands[] comms,double angle,double timeout){
-
         if (opModeIsActive()) {
             reset();
             //rest run time
@@ -86,11 +85,12 @@ public abstract class Auto extends LinearOpMode {
 //            angle +=Math.abs(angles.firstAngle);
             //might add some offset to the confition, if a perfect PID isn't feasible
             boolean canRun;
-            canRun = Math.abs(angle)-Math.abs(angles.firstAngle)>0;
+            canRun = Math.abs(angle)-Math.abs(angles.firstAngle)>0.5;
             while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
                     angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    double dist = Math.abs(angle)-Math.abs(angles.firstAngle);
+                    double dist = angle-angles.firstAngle;
+                    double D = Math.abs(angle) - Math.abs(angles.firstAngle);
                     double power = motorTurn.getPower(dist);
                     for(Commands command : comms){command.updatePower(power);}
                     //work until all the motors stop or until the time runs out
@@ -98,10 +98,10 @@ public abstract class Auto extends LinearOpMode {
                     telemetry.addData("Target angle",angle);
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = Math.abs(dist)>0;
+                    canRun = D>0.5;
              }
-             for(Commands C : comms){
-                C.stop();
+             for(Commands command : comms){
+                command.stop();
              }
             telemetry.addData("status","finished");
             telemetry.update();
@@ -116,7 +116,7 @@ public abstract class Auto extends LinearOpMode {
         the timeout variable
 
      */
-    public void move(Commands[] comms,double distance,double timeout) {
+    private void move(Commands[] comms,double distance,double timeout) {
         if (opModeIsActive()) {
             reset();
             for(Commands command : comms) {
@@ -135,19 +135,22 @@ public abstract class Auto extends LinearOpMode {
 //            }
             //Cait until the motors reach their goal
             //or until the time runs out
-                while (opModeIsActive() &&
+            boolean canRun = true;
+                for(Commands command:comms) {
+                while (opModeIsActive() && canRun&&
                         runtime.seconds() < timeout) {
-                    for(Commands command:comms) {
-                    if(command.canMove()) {
-                        double dist = command.getDist();
-                        double power = motorDist.getPower(dist);
-                        command.updatePower(power);
-                        //work until all the motors stop or until the time runs out
-                        telemetry.addData("dist", dist);
-                        telemetry.update();
+                            double dist = command.getDist();
+                            double power = motorDist.getPower(dist);
+                            for(Commands C : comms) {
+                                C.updatePower(power);
+                            }
+                            //work until all the motors stop or until the time runs out
+                            telemetry.addData("dist", power);
+                            telemetry.update();
+                            canRun = command.canMove();
+                        }
                     }
-                    }
-                }
+
 
             for(Commands command : comms){
                 command.stop();
@@ -166,10 +169,10 @@ public abstract class Auto extends LinearOpMode {
         has at least one encoder.
      */
     //////////MIGHT REMOVE LATER, FOUND A BETTER WAY///////
-    public boolean isBusy(Commands command,int i){
+    private boolean isBusy(Commands comms[],int i){
         // checks if all the motors are busy
-        if(i<=command.getMotors().length-1)
-            return command.canMove() && isBusy(command,i+1);
+        if(i<comms.length)
+            return comms[i].canMove() && isBusy(comms,i+1);
         return true;
     }
 
@@ -187,6 +190,9 @@ public abstract class Auto extends LinearOpMode {
                 break;
             case IMU_TURN:
                 this.turn(command,goal,time);
+                break;
+            case ENCODER_STRAFE:
+                this.move(command,goal*Math.sqrt(2),time);
                 break;
         }
     }

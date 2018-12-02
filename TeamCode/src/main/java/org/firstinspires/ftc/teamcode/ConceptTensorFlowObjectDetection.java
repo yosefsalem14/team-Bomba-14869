@@ -129,13 +129,17 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode {
                           }
                         }
                         if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                          if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                            telemetry.addData("Gold Mineral Position", "Left");
-                          } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                            telemetry.addData("Gold Mineral Position", "Right");
-                          } else {
-                            telemetry.addData("Gold Mineral Position", "Center");
-                          }
+                            int minDetection = Math.min(goldMineralX,Math.min(silverMineral1X,silverMineral2X));
+                            int midDetection = Math.min(goldMineralX,Math.max(silverMineral1X,silverMineral2X));
+                            int maxDetection = Math.max(goldMineralX,Math.max(silverMineral1X,silverMineral2X));
+                            int[] detections = {minDetection,midDetection,maxDetection};
+                            int goldIndex = -1;
+                            for(int i =0;i<detections.length;i++){
+                                if(goldMineralX==detections[i]){
+                                    goldIndex = i;
+                                }
+                            }
+
                         }
                       }
                       telemetry.update();

@@ -28,7 +28,7 @@ public class Robot {
     final double movePower = 0.7;
     final double turnPower = 1;
     final double strafePower = 0.6;
-    final double armPower = 0.7;
+    final double armPower = 0.6;
     final double collectPower = 1;
     final double stretchPower = 1;
     /**
@@ -60,13 +60,13 @@ public class Robot {
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
             //set the direction
-            for(int i =0;i<mainMotors.length;i++){
-                if((i & 0x1)==0)
-                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-                else
-                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
-
-            }
+//            for(int i =0;i<mainMotors.length;i++){
+//                if((i & 0x1)==0)
+//                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
+//                else
+//                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+//
+//            }
         }catch(Exception notF){
             for(int i =0;i<mainMotors.length;i++){
                 mainMotors[i]=null;

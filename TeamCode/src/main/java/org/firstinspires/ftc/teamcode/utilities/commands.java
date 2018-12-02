@@ -4,12 +4,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
+///////////////////       nah     //////////////
 public class Commands  {
     //a simple command interface to work with the autonomous system
     //warning: using the same motors with different Commands will result in complications
     public enum Direction{
-        forward,
-        reverse
+        FORWARD,
+        REVERSE
     }
     //TODO:
     //FIX THE FUNCTIONS, TAKE A LOOK AT EVERYTHING,
@@ -30,16 +31,20 @@ public class Commands  {
         Commands constructor, takes an array of DcMotors, their desired power
         and their Direction.
      */
-    public Commands(DcMotor[] motors,double power,Direction direction){
+    public Commands(DcMotor[] motors,double power,Direction D){
         this.motors = motors;
         this.power = power;
+        //////////////////////TODO:KEK FIX THIS/////////////
         this.minDist = 80000000000000.0;
-        switch(direction){
-            case forward:
+        switch(D){
+            case FORWARD:
                 this.direction = 1;
                 break;
-            case reverse:
+            case REVERSE:
                 this.direction = -1;
+                break;
+            default:
+                this.direction = 0;
                 break;
         }
     }
@@ -125,16 +130,10 @@ public class Commands  {
 
     /*
         goes through all the DcMotors and checks if one reached
-        it's goal, if it did it stops all the command
+        it's goal, if it 1`did it stops all the command
      */
     public boolean canMove() {
-        boolean execute = true;
-        for(int i =0;i<this.getMotors().length;i++){
-            if(Math.abs(getDist())==0){
-                execute = false;
-            }
-        }
-        return execute;
+        return (Math.abs(getDist())>=10);
     }
 
 
@@ -143,12 +142,15 @@ public class Commands  {
         returns the dist between the current encoder value and the desired dist
     */
     public double getDist(){
-        double dist;
+        double dist=0;
+        double DA = 0;
+        double minDist = 80000000000000000000.0;
         for(int i =0;i<this.getMotors().length;i++) {
-            double current = Math.abs(this.getMotors()[i].getCurrentPosition());
-            double target = Math.abs(this.getMotors()[i].getTargetPosition());
-            dist = target-current;
-            if(dist<minDist){
+            double current = this.getMotors()[i].getCurrentPosition();
+            double target = this.getMotors()[i].getTargetPosition();
+            DA = Math.abs(target) - Math.abs(current);
+            dist = target - current;
+            if(Math.abs(DA)<Math.abs(minDist)){
                 minDist = dist;
             }
         }
