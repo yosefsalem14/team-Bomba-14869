@@ -4,25 +4,24 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
-///////////////////       nah     //////////////
 public class Commands  {
     //a simple command interface to work with the autonomous system
     //warning: using the same motors with different Commands will result in complications
-    public enum Direction{
+    public enum Direction {
         FORWARD,
         REVERSE
     }
-    //TODO:
-    //FIX THE FUNCTIONS, TAKE A LOOK AT EVERYTHING,
-    // ADD MAGIC NUMBER
-    static final double     COUNTS_PER_MOTOR_REV    = 1680 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+
+
+    static final double     COUNTS_PER_MOTOR_REV    = 1680 ;
+    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;
     static final double     MAGIC_NUMBER         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/
             (WHEEL_DIAMETER_INCHES * 3.1415);
+
+
     private DcMotor[] motors;
     private double power;
-    private double minDist;
     private int direction = 0;
 
 
@@ -34,8 +33,6 @@ public class Commands  {
     public Commands(DcMotor[] motors,double power,Direction D){
         this.motors = motors;
         this.power = power;
-        //////////////////////TODO:KEK FIX THIS/////////////
-        this.minDist = 80000000000000.0;
         switch(D){
             case FORWARD:
                 this.direction = 1;
@@ -94,15 +91,6 @@ public class Commands  {
 
 
 
-    /*
-        Start the command, will give it it's initial power
-     */
-    public void execute() {
-        for (DcMotor motor :this.motors) {
-                motor.setPower(Math.abs(this.power)*this.direction);
-        }
-    }
-
 
 
     /*
@@ -144,7 +132,7 @@ public class Commands  {
     public double getDist(){
         double dist=0;
         double DA = 0;
-        double minDist = 80000000000000000000.0;
+        double minDist = this.getMotors()[0].getTargetPosition();
         for(int i =0;i<this.getMotors().length;i++) {
             double current = this.getMotors()[i].getCurrentPosition();
             double target = this.getMotors()[i].getTargetPosition();

@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-//TODO REMOVE AUTO FUNCTIONS AND MOVE THEM TO THE AUTONOMOUS/COMMAND CLASSES
 public class Robot {
      DcMotor[] mainMotors = null;
 
@@ -22,21 +21,24 @@ public class Robot {
     BNO055IMU imu=null;
      Servo[] latches =      null;
    //  CRServo backMotor = null;
-    /** Define the powers
+    /* Define the powers
      *
      */
-    final double movePower = 0.7;
-    final double turnPower = 1;
-    final double strafePower = 0.6;
-    final double armPower = 0.6;
-    final double collectPower = 1;
-    final double stretchPower = 1;
-    /**
+  //EDIT THESE VALUES TO CHANGE POWERS//
+    ////////////////////////////////////
+    final double movePower = 0.7;     //
+    final double turnPower = 1;       //
+    final double strafePower = 0.6;   //
+    final double armPower = 0.6;      //
+    final double collectPower = 1;    //
+    final double stretchPower = 1;    //
+    ////////////////////////////////////
+    /*
      * get the hardware map
      */
     private HardwareMap hw = null;
 
-    /**
+    /*
      * initialise the robot class
      */
     public Robot(){
@@ -44,6 +46,13 @@ public class Robot {
         armMotors  = new DcMotor[2];
         latches    = new Servo[2];
     }
+
+    /*
+        this function handles hardWare, it initialize everything that will be used
+        in this year's competition,
+        NOTE: might use a bit of threading to make this more efficient
+
+     */
     public void init(HardwareMap hw){
         this.hw=hw;
         /**

@@ -10,8 +10,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
-
-///LAST TODO: fix Direction handling
 public abstract class Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private PID motorDist;
@@ -168,7 +166,7 @@ public abstract class Auto extends LinearOpMode {
         encoders, the encoders are wired so each possible Commands array
         has at least one encoder.
      */
-    //////////MIGHT REMOVE LATER, FOUND A BETTER WAY///////
+    //////////THIS WILL ONLY GET USED WITH MORE THAN 1 ENCODER//////
     private boolean isBusy(Commands comms[],int i){
         // checks if all the motors are busy
         if(i<comms.length)
@@ -189,7 +187,7 @@ public abstract class Auto extends LinearOpMode {
                 this.move(command,goal,time);
                 break;
             case IMU_TURN:
-                this.turn(command,goal,time);
+                this.turn(command,-goal,time);
                 break;
             case ENCODER_STRAFE:
                 this.move(command,goal*Math.sqrt(2),time);
