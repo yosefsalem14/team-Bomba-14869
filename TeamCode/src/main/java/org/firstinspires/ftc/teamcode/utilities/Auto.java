@@ -16,6 +16,7 @@ public abstract class Auto extends LinearOpMode {
     private PID motorTurn;
     private Orientation angles;
     private BNO055IMU imu;
+    private vision objectDetector;
     /* get the IMU sensor
 
      */
@@ -42,18 +43,73 @@ public abstract class Auto extends LinearOpMode {
      initialize all the variables(including PIDs)
      */
     public void initialize(){
-         angles=new Orientation();
+        objectDetector = new vision(hardwareMap);
+        angles=new Orientation();
+        objectDetector.init();
         getIMU();
         motorDist = new PID(0.002090064,0.0,0.00006899);
-        motorTurn = new PID(0.020599489,0.0,0.000454959);
+        motorTurn = new PID(0.020199489,0.0,0.000484959);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
+
+
+    public String getDetections(){
+        objectDetector.activate();
+        String detections = "";
+        while(objectDetector.getIter()<=10&&opModeIsActive()){
+            int nextPos = objectDetector.getPos();
+            if(nextPos!=-1)
+                detections += nextPos;
+        }
+        objectDetector.shutdown();
+        return detections;
+    }
+
+    public int getGoldPosition(){
+        String detections = this.getDetections();
+        int c1 = 0;
+        int c2 = 0;
+        int c3 = 0;
+
+        for(int i = 0;i<detections.length();i++){
+            char pos = detections.charAt(i);
+            switch (pos){
+                case '1':
+                    c1++;
+                    break;
+                case '2':
+                    c2++;
+                    break;
+                case '3':
+                    c3++;
+                    break;
+            }
+        }
+        int maxCounter = Math.max(c1,Math.max(c2,c3));
+        telemetry.addData("max detect",maxCounter);
+        if(maxCounter==c1){
+            return 1;
+        }else if(maxCounter==c2){
+            return 0;
+        }else if(maxCounter==c3){
+            return -1;
+        }
+        return 0;
+    }
+
 
     /*
         ******NOTE******
         * Both turn and move take an array of commands,
-        * the functions will execute these commands at the same time
+        * the functions will execute these commands one at the same time
         * this is done to give the programmer more flexibility,
+        *
+        * THIS IS WRONG, the functions only execute the first command,
+        * might redesign it and only run the loop through commands that have
+        * encoders as it's hard-coded right now and doesn't work properly
+        * with multiple encoders,
+        * ALSO NODE:
+        * when a command's directionn
      */
 
 
@@ -68,27 +124,28 @@ public abstract class Auto extends LinearOpMode {
             reset();
             //rest run time
             runtime.reset();
-            /*
-            command.execute() might be pointless here!
-            check it next time!
-            this is part of the new Direction handling :>
-             */
-//            //set all Che powers
-//            for(Commands command:comms) {
-//                command.execute();
-//            }
+
 
             //wait until the moto1rs reach their goal
             //or until the time runs out
-//            angle +=Math.abs(angles.firstAngle);
-            //might add some offset to the confition, if a perfect PID isn't feasible
             boolean canRun;
-            canRun = Math.abs(angle)-Math.abs(angles.firstAngle)>0.5;
+            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>0.5;
             while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
                     angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    double dist = angle-angles.firstAngle;
+                    if(angle>360){
+                        angle-=360;
+                    }
+                    if(angles.firstAngle<0){
+                        angles.firstAngle+=360;
+                    }
+
+                    double dist = (angle)-angles.firstAngle;
+
                     double D = Math.abs(angle) - Math.abs(angles.firstAngle);
+                    if(Math.abs(dist)>180) {
+                        dist =  -dist;
+                    }
                     double power = motorTurn.getPower(dist);
                     for(Commands command : comms){command.updatePower(power);}
                     //work until all the motors stop or until the time runs out
@@ -96,7 +153,7 @@ public abstract class Auto extends LinearOpMode {
                     telemetry.addData("Target angle",angle);
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = D>0.5;
+                    canRun = Math.abs(D)>0.5;
              }
              for(Commands command : comms){
                 command.stop();
@@ -120,17 +177,12 @@ public abstract class Auto extends LinearOpMode {
             for(Commands command : comms) {
                 command.init(distance);
             }
+
             //rest run time
             runtime.reset();
-            /*
-            command.execute() might be pointless here!
-            check it next time!
-            this is part of the new Direction handling :>
-             */
-//            //set all powers
-//            for(Commands command:comms) {
-//                command.execute();
-//            }
+
+
+
             //Cait until the motors reach their goal
             //or until the time runs out
             boolean canRun = true;
@@ -157,6 +209,8 @@ public abstract class Auto extends LinearOpMode {
             telemetry.update();
             }
         }
+
+
     /*
         this is used in the move() function to check
         whether the one of the commands in the command array reached it's desired
@@ -182,12 +236,16 @@ public abstract class Auto extends LinearOpMode {
 
      */
     public void autoDrive(AutoDrivetype moveType,Commands[] command,double goal,double time){
+        time = Math.abs(time);
         switch(moveType){
             case ENCODER_MOVE:
                 this.move(command,goal,time);
                 break;
             case IMU_TURN:
-                this.turn(command,-goal,time);
+                if(goal>=0)
+                    this.turn(command, goal, time);
+                else
+                    this.turn(command, Math.abs(goal)+270, time);
                 break;
             case ENCODER_STRAFE:
                 this.move(command,goal*Math.sqrt(2),time);

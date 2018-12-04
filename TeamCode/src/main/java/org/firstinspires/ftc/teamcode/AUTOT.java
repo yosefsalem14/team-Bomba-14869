@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
+import android.util.Log;
 import org.firstinspires.ftc.teamcode.utilities.AutoDrivetype;
 import org.firstinspires.ftc.teamcode.utilities.Auto;
 import org.firstinspires.ftc.teamcode.utilities.Commands;
+
+//Log.i("info","going forwards");
+//Use Log.i() for debugging!
+//Can now debug easilly :>
 @Autonomous(name="TESTING")
 public class AUTOT extends Auto {
     Robot rover = new Robot();
@@ -13,13 +16,23 @@ public class AUTOT extends Auto {
     private Commands[] turn;
     private Commands[] strafe;
     @Override
-    public void runOpMode(){
+    public void runOpMode() throws InterruptedException{
         Init();
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
-        execute(AutoDrivetype.ENCODER_MOVE,20,3);
-        execute(AutoDrivetype.ENCODER_STRAFE,8,3);
+        if(opModeIsActive()) {
+//            execute(AutoDrivetype.ENCODER_MOVE, 8, 10);
+//            Thread.sleep(100);
+//            execute(AutoDrivetype.IMU_TURN, 45, 4);
+//            Thread.sleep(100);
+//            execute(AutoDrivetype.IMU_TURN, -45, 4);
+//            Thread.sleep(100);
+//            execute(AutoDrivetype.IMU_TURN, 0, 4);
+//            Thread.sleep(100);
+            int goldPos = getGoldPosition();
+            execute(AutoDrivetype.IMU_TURN, 45*goldPos, 4*goldPos);
+        }
     }
     public void Init(){
         rover.init(hardwareMap);
@@ -30,11 +43,11 @@ public class AUTOT extends Auto {
         DcMotor[] x2 = {rover.mainMotors[1],rover.mainMotors[2]};
 
 
-        Commands rightFwd = new Commands(right,0.8,Commands.Direction.FORWARD);
-        Commands rightRvrs = new Commands(right,0.8,Commands.Direction.REVERSE);
-        Commands leftFwd = new Commands(left,0.8,Commands.Direction.FORWARD);
-        Commands strafe1 = new Commands(x1,0.3,Commands.Direction.REVERSE);
-        Commands strafe2 = new Commands(x2,0.3,Commands.Direction.FORWARD);
+        Commands rightFwd = new Commands(right,0.5,Commands.Direction.FORWARD);
+        Commands rightRvrs = new Commands(right,0.5,Commands.Direction.REVERSE);
+        Commands leftFwd = new Commands(left,0.5,Commands.Direction.FORWARD);
+        Commands strafe1 = new Commands(x1,0.5,Commands.Direction.REVERSE);
+        Commands strafe2 = new Commands(x2,0.5,Commands.Direction.FORWARD);
         Commands[] move_I = {leftFwd,rightFwd};
         Commands[] turn_I = {rightRvrs,leftFwd};
         Commands[] strafe_I = {strafe2,strafe1};
@@ -45,13 +58,13 @@ public class AUTOT extends Auto {
     public void execute(AutoDrivetype movement,int goal,int timeOut){
         switch(movement){
             case ENCODER_MOVE:
-                autoDrive(AutoDrivetype.ENCODER_MOVE,move,goal,timeOut);
+                autoDrive(movement,move,goal,timeOut);
                 break;
             case IMU_TURN:
-                autoDrive(AutoDrivetype.IMU_TURN,turn,goal,timeOut);
+                autoDrive(movement,turn,goal,timeOut);
                 break;
             case ENCODER_STRAFE:
-                autoDrive(AutoDrivetype.ENCODER_STRAFE,strafe,goal,timeOut);
+                autoDrive(movement,strafe,goal,timeOut);
                 break;
         }
 
