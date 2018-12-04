@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-//TODO REMOVE AUTO FUNCTIONS AND MOVE THEM TO THE AUTONOMOUS/COMMAND CLASSES
 public class Robot {
      DcMotor[] mainMotors = null;
 
@@ -21,29 +20,42 @@ public class Robot {
 
     BNO055IMU imu=null;
      Servo[] latches =      null;
+
+     Servo[] cubeIntakes = null;
    //  CRServo backMotor = null;
-    /** Define the powers
+    /* Define the powers
      *
      */
-    final double movePower = 0.7;
-    final double turnPower = 1;
-    final double strafePower = 0.6;
-    final double armPower = 0.7;
-    final double collectPower = 1;
-    final double stretchPower = 1;
-    /**
+  //EDIT THESE VALUES TO CHANGE POWERS//
+    ////////////////////////////////////
+    final double movePower = 0.7;     //
+    final double turnPower = 1;       //
+    final double strafePower = 0.6;   //
+    final double armPower = 0.6;      //
+    final double collectPower = 1;    //
+    final double stretchPower = 1;    //
+    ////////////////////////////////////
+    /*
      * get the hardware map
      */
     private HardwareMap hw = null;
 
-    /**
+    /*
      * initialise the robot class
      */
     public Robot(){
         mainMotors = new DcMotor[4];
         armMotors  = new DcMotor[2];
         latches    = new Servo[2];
+        cubeIntakes = new Servo[2];
     }
+
+    /*
+        this function handles hardWare, it initialize everything that will be used
+        in this year's competition,
+        NOTE: might use a bit of threading to make this more efficient
+
+     */
     public void init(HardwareMap hw){
         this.hw=hw;
         /**
@@ -59,7 +71,7 @@ public class Robot {
             for(int i =0;i<mainMotors.length;i++){
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
-            //set the direction
+//            //set the direction
             for(int i =0;i<mainMotors.length;i++){
                 if((i & 0x1)==0)
                     mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
@@ -140,7 +152,20 @@ public class Robot {
                 latches[i] = null;
             }
         }
+        try{
+            cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
+            cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
+        }catch(Exception e){
+            for(int i =0;i<cubeIntakes.length;i++){
+                cubeIntakes[i] = null;
+            }
+        }
+        for(int i =0;i<latches.length;i++){
+            latches[i].setDirection(Servo.Direction.FORWARD);
+        }
 
+            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
+        cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
 
     }
 }

@@ -35,11 +35,9 @@ public class RoverMovement extends LinearOpMode {
             double com2LeftBumper =  0.0;
             double com2RightBumper = 0.0;
             double collect =         0.0;
-        for(int i =0;i<rover.latches.length;i++){
-            rover.latches[i].setDirection(Servo.Direction.FORWARD);
-        }
-
         boolean once = true;
+        boolean onceIntakes = true;
+        boolean CubeIntakesOpen = false;
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
@@ -72,6 +70,7 @@ public class RoverMovement extends LinearOpMode {
 
                 //open and close the latches
                     boolean APressed = gamepad2.x;
+                    boolean YPressed = gamepad2.y;
                 if(APressed){
                     if(once) {
                         latchOpen = !latchOpen;
@@ -79,6 +78,14 @@ public class RoverMovement extends LinearOpMode {
                     }
                 }else{
                     once = true;
+                }
+                if(YPressed){
+                    if(onceIntakes){
+                        CubeIntakesOpen = !CubeIntakesOpen;
+                        onceIntakes = !onceIntakes;
+                    }
+                }else{
+                    onceIntakes = true;
                 }
 
             /*
@@ -136,6 +143,17 @@ public class RoverMovement extends LinearOpMode {
                     }
                 }
             }
+
+
+            for(int i =0;i<rover.cubeIntakes.length;i++) {
+                if (CubeIntakesOpen) {
+                        rover.cubeIntakes[i].setPosition(0.5);
+
+                } else {
+                        rover.cubeIntakes[i].setPosition(0);
+                }
+            }
+
             //output
             if(armMove!=0)
                 telemetry.addData("player2_moves",

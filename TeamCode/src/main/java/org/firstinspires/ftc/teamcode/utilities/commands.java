@@ -7,21 +7,21 @@ import com.qualcomm.robotcore.util.Range;
 public class Commands  {
     //a simple command interface to work with the autonomous system
     //warning: using the same motors with different Commands will result in complications
-    public enum Direction{
-        forward,
-        reverse
+    public enum Direction {
+        FORWARD,
+        REVERSE
     }
-    //TODO:
-    //FIX THE FUNCTIONS, TAKE A LOOK AT EVERYTHING,
-    // ADD MAGIC NUMBER
-    static final double     COUNTS_PER_MOTOR_REV    = 1680 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+
+
+    static final double     COUNTS_PER_MOTOR_REV    = 1680 ;
+    static final double     DRIVE_GEAR_REDUCTION    = 1.0 ;
+    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;
     static final double     MAGIC_NUMBER         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/
             (WHEEL_DIAMETER_INCHES * 3.1415);
+
+
     private DcMotor[] motors;
     private double power;
-    private int targetMotor;//TODO: check what this does
     private int direction = 0;
 
 
@@ -30,16 +30,18 @@ public class Commands  {
         Commands constructor, takes an array of DcMotors, their desired power
         and their Direction.
      */
-    public Commands(DcMotor[] motors,double power,Direction direction){
+    public Commands(DcMotor[] motors,double power,Direction D){
         this.motors = motors;
         this.power = power;
-        this.targetMotor = 0;
-        switch(direction){
-            case forward:
+        switch(D){
+            case FORWARD:
                 this.direction = 1;
                 break;
-            case reverse:
+            case REVERSE:
                 this.direction = -1;
+                break;
+            default:
+                this.direction = 0;
                 break;
         }
     }
@@ -89,15 +91,6 @@ public class Commands  {
 
 
 
-    /*
-        Start the command, will give it it's initial power
-     */
-    public void execute() {
-        for (DcMotor motor :this.motors) {
-                motor.setPower(Math.abs(this.power)*this.direction);
-        }
-    }
-
 
 
     /*
@@ -125,17 +118,10 @@ public class Commands  {
 
     /*
         goes through all the DcMotors and checks if one reached
-        it's goal, if it did it stops all the command
+        it's goal, if it 1`did it stops all the command
      */
     public boolean canMove() {
-        boolean execute = true;
-        for(int i =0;i<this.getMotors().length;i++){
-            if(Math.abs(getDist())==0){
-                execute = false;
-                targetMotor = i;
-            }
-        }
-        return execute;
+        return (Math.abs(getDist())>=10);
     }
 
 
@@ -144,13 +130,15 @@ public class Commands  {
         returns the dist between the current encoder value and the desired dist
     */
     public double getDist(){
+        double dist=0;
+        double DA = 0;
         double minDist = this.getMotors()[0].getTargetPosition();
-        double dist;
         for(int i =0;i<this.getMotors().length;i++) {
-            double current = Math.abs(this.getMotors()[i].getCurrentPosition());
-            double target = Math.abs(this.getMotors()[i].getTargetPosition());
-            dist = target-current;
-            if(dist<minDist){
+            double current = this.getMotors()[i].getCurrentPosition();
+            double target = this.getMotors()[i].getTargetPosition();
+            DA = Math.abs(target) - Math.abs(current);
+            dist = target - current;
+            if(Math.abs(DA)<Math.abs(minDist)){
                 minDist = dist;
             }
         }
