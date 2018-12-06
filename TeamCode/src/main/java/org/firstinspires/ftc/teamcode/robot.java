@@ -10,29 +10,29 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 public class Robot {
-     DcMotor[] mainMotors = null;
+    DcMotor[] mainMotors = null;
 
-     DcMotor[] armMotors =  null;
+    DcMotor[] armMotors = null;
 
-     DcMotor stretcher =    null;
+    DcMotor stretcher = null;
 
-     DcMotor collector =    null;
+    DcMotor collector = null;
 
-    BNO055IMU imu=null;
-     Servo[] latches =      null;
+    BNO055IMU imu = null;
+    Servo[] latches = null;
 
-     Servo[] cubeIntakes = null;
-   //  CRServo backMotor = null;
+    Servo[] cubeIntakes = null;
+    //  CRServo backMotor = null;
     /* Define the powers
      *
      */
-  //EDIT THESE VALUES TO CHANGE POWERS//
+    //EDIT THESE VALUES TO CHANGE POWERS//
     ////////////////////////////////////
     final double movePower = 0.7;     //
     final double turnPower = 1;       //
     final double strafePower = 0.6;   //
     final double armPower = 0.6;      //
-    final double collectPower = 1;    //
+    final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
     final double stretchPower = 1;    //
     ////////////////////////////////////
     /*
@@ -43,10 +43,10 @@ public class Robot {
     /*
      * initialise the robot class
      */
-    public Robot(){
+    public Robot() {
         mainMotors = new DcMotor[4];
-        armMotors  = new DcMotor[2];
-        latches    = new Servo[2];
+        armMotors = new DcMotor[2];
+        latches = new Servo[2];
         cubeIntakes = new Servo[2];
     }
 
@@ -56,8 +56,8 @@ public class Robot {
         NOTE: might use a bit of threading to make this more efficient
 
      */
-    public void init(HardwareMap hw){
-        this.hw=hw;
+    public void init(HardwareMap hw) {
+        this.hw = hw;
         /**
          * get the movement motors
          *
@@ -68,7 +68,7 @@ public class Robot {
             mainMotors[2] = this.hw.get(DcMotor.class, "frontLeft");
             mainMotors[3] = this.hw.get(DcMotor.class, "frontRight");
             //run them without an encoder
-            for(int i =0;i<mainMotors.length;i++){
+            for (int i = 0; i < mainMotors.length; i++) {
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
 //            //set the direction
@@ -79,14 +79,14 @@ public class Robot {
                     mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
 
             }
-        }catch(Exception notF){
-            for(int i =0;i<mainMotors.length;i++){
-                mainMotors[i]=null;
+        } catch (Exception notF) {
+            for (int i = 0; i < mainMotors.length; i++) {
+                mainMotors[i] = null;
             }
         }
 
         /**
-        get the arm motors
+         get the arm motors
          */
         try {
             armMotors[0] = this.hw.get(DcMotor.class, "armRight");
@@ -97,8 +97,8 @@ public class Robot {
             }
 
 
-            for(int i =0;i<armMotors.length;i++){
-                if((i & 0x1)==0)
+            for (int i = 0; i < armMotors.length; i++) {
+                if ((i & 0x1) == 0)
                     armMotors[i].setDirection(DcMotor.Direction.FORWARD);
                 else
                     armMotors[i].setDirection(DcMotor.Direction.REVERSE);
@@ -107,8 +107,8 @@ public class Robot {
             }
 
 
-        }catch(Exception notF){
-            for(int i =0;i<armMotors.length;i++){
+        } catch (Exception notF) {
+            for (int i = 0; i < armMotors.length; i++) {
                 armMotors[i] = null;
             }
         }
@@ -123,8 +123,8 @@ public class Robot {
             stretcher.setDirection(DcMotor.Direction.REVERSE);
 
 
-        }catch(Exception notF){
-            stretcher=null;
+        } catch (Exception notF) {
+            stretcher = null;
         }
         /**
          * get the collector motor
@@ -135,7 +135,7 @@ public class Robot {
             collector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
             collector.setDirection(DcMotor.Direction.REVERSE);
-        }catch(Exception notF){
+        } catch (Exception notF) {
 
             collector = null;
         }
@@ -144,11 +144,11 @@ public class Robot {
         /*
         get the latch servos
          */
-        try{
-            latches[0] = this.hw.get(Servo.class,"latchRight");
-            latches[1] = this.hw.get(Servo.class,"latchLeft");
-        }catch(Exception notF){
-            for(int i =0;i<latches.length;i++){
+        try {
+            latches[0] = this.hw.get(Servo.class, "latchRight");
+            latches[1] = this.hw.get(Servo.class, "latchLeft");
+        } catch (Exception notF) {
+            for (int i = 0; i < latches.length; i++) {
                 latches[i] = null;
             }
         }
@@ -168,4 +168,5 @@ public class Robot {
         cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
 
     }
-}
+    }
+

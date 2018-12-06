@@ -52,49 +52,49 @@ public abstract class Auto extends LinearOpMode {
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
 
-
-    public String getDetections(){
+    /*
+        ******VISION FUNCTIONS*****
+        TODO: add proper comments that explain what they do :>
+    */
+    private DetectedObject[] getDetections(){
         objectDetector.activate();
-        String detections = "";
+        DetectedObject[] objects = new DetectedObject[10];
         while(objectDetector.getIter()<=10&&opModeIsActive()){
-            int nextPos = objectDetector.getPos();
-            if(nextPos!=-1)
-                detections += nextPos;
+            DetectedObject nextPos = objectDetector.getPos();
+            if(nextPos.getID()!=-1)
+                objects[objectDetector.getIter()] = nextPos;
         }
         objectDetector.shutdown();
-        return detections;
+        return objects;
     }
-
-    public int getGoldPosition(){
-        String detections = this.getDetections();
-        int c1 = 0;
-        int c2 = 0;
-        int c3 = 0;
-
-        for(int i = 0;i<detections.length();i++){
-            char pos = detections.charAt(i);
-            switch (pos){
-                case '1':
-                    c1++;
-                    break;
-                case '2':
-                    c2++;
-                    break;
-                case '3':
-                    c3++;
-                    break;
+    public DetectedObject getMatchingId(DetectedObject[] detections,int ID){
+        for(int i =0;i<detections.length;i++){
+            if(detections[i].getID() == ID+1){
+                return detections[i];
             }
         }
-        int maxCounter = Math.max(c1,Math.max(c2,c3));
-        telemetry.addData("max detect",maxCounter);
-        if(maxCounter==c1){
-            return 1;
-        }else if(maxCounter==c2){
-            return 0;
-        }else if(maxCounter==c3){
-            return -1;
+        return new DetectedObject(0,0);
+    }
+    public double getGoldPosition(){
+        DetectedObject[] detections = this.getDetections();
+        int[] counters = new int[3];
+        double GOLD_POS=0;
+        int maxCounter = 0;
+        int index = 0;
+        for(int i = 0;i<detections.length;i++){
+            int pos = detections[i].getPos();
+            counters[pos-1]++;
         }
-        return 0;
+        for(int i = 0;i<counters.length;i++){
+            if(counters[i]>maxCounter){
+                maxCounter = counters[i];
+                index = i;
+            }
+        }
+        DetectedObject matching = getMatchingId(detections,index);
+        GOLD_POS = matching.getAngle();
+
+        return GOLD_POS;
     }
 
 
@@ -119,7 +119,7 @@ public abstract class Auto extends LinearOpMode {
         the robot will automatically stop moving if the command times out
         (if the timer count exceeds timeout)
      */
-    public void turn(Commands[] comms,double angle,double timeout){
+    public void turn(Commands[] comms,double angle,double timeout) throws InterruptedException{
         if (opModeIsActive()) {
             reset();
             //rest run time
@@ -158,6 +158,7 @@ public abstract class Auto extends LinearOpMode {
              for(Commands command : comms){
                 command.stop();
              }
+             Thread.sleep(100);
             telemetry.addData("status","finished");
             telemetry.update();
         } }
@@ -171,7 +172,7 @@ public abstract class Auto extends LinearOpMode {
         the timeout variable
 
      */
-    private void move(Commands[] comms,double distance,double timeout) {
+    private void move(Commands[] comms,double distance,double timeout)throws InterruptedException {
         if (opModeIsActive()) {
             reset();
             for(Commands command : comms) {
@@ -205,6 +206,7 @@ public abstract class Auto extends LinearOpMode {
             for(Commands command : comms){
                 command.stop();
             }
+            Thread.sleep(100);
             telemetry.addData("status","finished");
             telemetry.update();
             }
@@ -235,7 +237,7 @@ public abstract class Auto extends LinearOpMode {
         to memorise functions, more functions could potentially get added later
 
      */
-    public void autoDrive(AutoDrivetype moveType,Commands[] command,double goal,double time){
+    public void autoDrive(AutoDrivetype moveType,Commands[] command,double goal,double time)throws InterruptedException{
         time = Math.abs(time);
         switch(moveType){
             case ENCODER_MOVE:

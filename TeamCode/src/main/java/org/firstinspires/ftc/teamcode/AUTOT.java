@@ -22,17 +22,21 @@ public class AUTOT extends Auto {
         telemetry.update();
         waitForStart();
         if(opModeIsActive()) {
-//            execute(AutoDrivetype.ENCODER_MOVE, 8, 10);
-//            Thread.sleep(100);
-//            execute(AutoDrivetype.IMU_TURN, 45, 4);
-//            Thread.sleep(100);
-//            execute(AutoDrivetype.IMU_TURN, -45, 4);
-//            Thread.sleep(100);
-//            execute(AutoDrivetype.IMU_TURN, 0, 4);
-//            Thread.sleep(100);
-            int goldPos = getGoldPosition();
-            execute(AutoDrivetype.IMU_TURN, 45*goldPos, 4*goldPos);
+            double goldPos = getGoldPosition();
+            execute(AutoDrivetype.ENCODER_MOVE,16,3);
+            execute(AutoDrivetype.IMU_TURN, (int)goldPos, 4*sign(goldPos));
+            execute(AutoDrivetype.ENCODER_MOVE,28,4);
+            execute(AutoDrivetype.ENCODER_MOVE,-28,4);
+            execute(AutoDrivetype.IMU_TURN,0,4);
         }
+    }
+    public int sign(double num){
+        if(num>0){
+            return 1;
+        }else if(num<0){
+            return -1;
+        }
+        return 0;
     }
     public void Init(){
         rover.init(hardwareMap);
@@ -55,7 +59,7 @@ public class AUTOT extends Auto {
          turn = turn_I;
          strafe = strafe_I;
     }
-    public void execute(AutoDrivetype movement,int goal,int timeOut){
+    public void execute(AutoDrivetype movement,int goal,int timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
                 autoDrive(movement,move,goal,timeOut);

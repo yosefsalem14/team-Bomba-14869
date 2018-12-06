@@ -5,6 +5,7 @@ package org.firstinspires.ftc.teamcode.utilities;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -51,39 +52,54 @@ public class vision {
             tfod.activate();
         }
     }
-    public int getPos() {
+    public DetectedObject getPos() {
+        DetectedObject gold = new DetectedObject(-1,0);
+        DetectedObject silver1=new DetectedObject(-1,0);
+        DetectedObject silver2=new DetectedObject(-1,0);
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                if (updatedRecognitions.size() == 3) {
+                if (updatedRecognitions.size() == 2 || updatedRecognitions.size() == 3) {
                     this.runs++;
-                    int goldMineralX = -1;
-                    int silverMineral1X = -1;
-                    int silverMineral2X = -1;
-                    for (Recognition recognition : updatedRecognitions) {
+                    for (int x = 0; x < updatedRecognitions.size(); x++) {
+                        Recognition recognition = updatedRecognitions.get(x);
                         if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                            goldMineralX = (int) recognition.getLeft();
-                        } else if (silverMineral1X == -1) {
-                            silverMineral1X = (int) recognition.getLeft();
+                            gold = new DetectedObject((int) recognition.getLeft()
+                                    ,recognition.estimateAngleToObject(AngleUnit.DEGREES));
+                        } else if (silver1.getPos() == -1) {
+                            silver1 = new DetectedObject((int) recognition.getLeft()
+                                    ,recognition.estimateAngleToObject(AngleUnit.DEGREES));
                         } else {
-                            silverMineral2X = (int) recognition.getLeft();
+                            silver2 = new DetectedObject((int) recognition.getLeft()
+                                    ,recognition.estimateAngleToObject(AngleUnit.DEGREES));
                         }
                     }
-                    if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                        if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                            return 1;
-                        } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                            return 3;
-                        } else {
-                            return 2;
+                    int goldMineralX = gold.getPos();
+                    int silverMineral1X = silver1.getPos();
+                    int silverMineral2X = silver2.getPos();
+                    if (updatedRecognitions.size() == 2) {
+                        if (goldMineralX == -1) {
+                            gold.setID(3);
+                        } else if (goldMineralX > silverMineral1X) {
+                            gold.setID(2);
                         }
+                        gold.setID(1);
+                    } else if (updatedRecognitions.size() == 3) {
+                        if(goldMineralX!=-1) {
+                            if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
+                                gold.setID(1);//left
+                            } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
+                                gold.setID(3);//right
+                            }
+                              gold.setID(2);//center
+
                     }
                 }
             }
         }
-        return -1;
     }
-
+        return gold;
+    }
     public void shutdown(){
         if(tfod!=null){
             tfod.shutdown();

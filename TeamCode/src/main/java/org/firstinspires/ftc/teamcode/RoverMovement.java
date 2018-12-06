@@ -2,12 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.util.ThreadPool;
-import java.util.concurrent.Future;
+import android.util.Log;
 /*
     ///////main TeleOP class/////
     this will be used for the main robot
@@ -147,7 +143,11 @@ public class RoverMovement extends LinearOpMode {
 
             for(int i =0;i<rover.cubeIntakes.length;i++) {
                 if (CubeIntakesOpen) {
-                        rover.cubeIntakes[i].setPosition(0.5);
+                        Log.i("block Intake","Pressed boxIntake");
+                        if(i%2==0){
+                            rover.cubeIntakes[i].setPosition((77.0/180.0));
+                        }else
+                        rover.cubeIntakes[i].setPosition((85.0/180.0));
 
                 } else {
                         rover.cubeIntakes[i].setPosition(0);
