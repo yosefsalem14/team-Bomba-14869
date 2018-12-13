@@ -8,6 +8,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
 public abstract class Auto extends LinearOpMode {
@@ -47,8 +49,8 @@ public abstract class Auto extends LinearOpMode {
         angles=new Orientation();
         objectDetector.init();
         getIMU();
-        motorDist = new PID(0.002090064,0.0,0.00006899);
-        motorTurn = new PID(0.020199489,0.0,0.000484959);
+        motorDist = new PID(0.001640000,0.0,0.00006899);
+        motorTurn = new PID(0.01849998542908,0.0,0.000598858);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
 
@@ -56,33 +58,40 @@ public abstract class Auto extends LinearOpMode {
         ******VISION FUNCTIONS*****
         TODO: add proper comments that explain what they do :>
     */
-    private DetectedObject[] getDetections(){
+    private void act(){
         objectDetector.activate();
+    }
+    private DetectedObject[] getDetections(){
         DetectedObject[] objects = new DetectedObject[10];
-        while(objectDetector.getIter()<=10&&opModeIsActive()){
+        int i = 0;
+        while(i<objects.length&&opModeIsActive()){
             DetectedObject nextPos = objectDetector.getPos();
-            if(nextPos.getID()!=-1)
-                objects[objectDetector.getIter()] = nextPos;
+            if(nextPos.getID()!=ObjectPositions.UNKNOWN)
+                objects[i++] = nextPos;
         }
-        objectDetector.shutdown();
         return objects;
+    }
+    private void shut(){
+            objectDetector.shutdown();
     }
     public DetectedObject getMatchingId(DetectedObject[] detections,int ID){
         for(int i =0;i<detections.length;i++){
-            if(detections[i].getID() == ID+1){
+            int currentValue = detections[i].getID().getIntVal();
+            if(currentValue == ID+1){
                 return detections[i];
             }
         }
         return new DetectedObject(0,0);
     }
     public double getGoldPosition(){
+        this.act();
         DetectedObject[] detections = this.getDetections();
         int[] counters = new int[3];
         double GOLD_POS=0;
         int maxCounter = 0;
         int index = 0;
         for(int i = 0;i<detections.length;i++){
-            int pos = detections[i].getPos();
+            int pos = detections[i].getID().getIntVal();
             counters[pos-1]++;
         }
         for(int i = 0;i<counters.length;i++){
@@ -93,7 +102,7 @@ public abstract class Auto extends LinearOpMode {
         }
         DetectedObject matching = getMatchingId(detections,index);
         GOLD_POS = matching.getAngle();
-
+        this.shut();
         return GOLD_POS;
     }
 
@@ -133,9 +142,7 @@ public abstract class Auto extends LinearOpMode {
             while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
                     angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    if(angle>360){
-                        angle-=360;
-                    }
+                    angle = angle%360;
                     if(angles.firstAngle<0){
                         angles.firstAngle+=360;
                     }
@@ -237,6 +244,7 @@ public abstract class Auto extends LinearOpMode {
         to memorise functions, more functions could potentially get added later
 
      */
+
     public void autoDrive(AutoDrivetype moveType,Commands[] command,double goal,double time)throws InterruptedException{
         time = Math.abs(time);
         switch(moveType){
@@ -247,7 +255,7 @@ public abstract class Auto extends LinearOpMode {
                 if(goal>=0)
                     this.turn(command, goal, time);
                 else
-                    this.turn(command, Math.abs(goal)+270, time);
+                    this.turn(command, 360-Math.abs(goal), time);
                 break;
             case ENCODER_STRAFE:
                 this.move(command,goal*Math.sqrt(2),time);

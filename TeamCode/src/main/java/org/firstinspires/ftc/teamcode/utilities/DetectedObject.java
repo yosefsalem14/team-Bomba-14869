@@ -2,26 +2,28 @@ package org.firstinspires.ftc.teamcode.utilities;
 
 public class DetectedObject {
     private int pos;
-    private int ID;
+    private ObjectPositions ID;
     private double angle;
     public DetectedObject(int pos,double angle){
         this.pos = pos;
         this.angle = angle;
-        this.ID = -1;
+        this.ID = ObjectPositions.UNKNOWN;
     }
 
     public int getPos(){
         return this.pos;
     }
-    public void setID(int num){
-        this.ID = num;
+    public void setID(ObjectPositions newID){
+        this.ID = newID;
     }
-    public int getID(){
+    public ObjectPositions getID(){
         return this.ID;
     }
     public double getAngle(){
         return this.angle;
     }
-
+    public void setAngle(double ang){
+        this.angle = ang;
+    }
 
 }

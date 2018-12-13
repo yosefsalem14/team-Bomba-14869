@@ -21,7 +21,7 @@ public class RoverMovement extends LinearOpMode {
         rover.init(hardwareMap);
         //define controller input variables
             double move =            0.0;
-            boolean latchOpen = false;
+            boolean latchOpen =      false;
             double armMove =         0.0;
             double turn =            0.0;
             double strafe =          0.0;
@@ -31,6 +31,7 @@ public class RoverMovement extends LinearOpMode {
             double com2LeftBumper =  0.0;
             double com2RightBumper = 0.0;
             double collect =         0.0;
+            double latchOn = 0.0;
         boolean once = true;
         boolean onceIntakes = true;
         boolean CubeIntakesOpen = false;
@@ -40,6 +41,8 @@ public class RoverMovement extends LinearOpMode {
         while(opModeIsActive()) {
 
             //get all the variables:
+                //parse the Dpad clicks
+                    latchOn = (gamepad2.dpad_up ? 1 : 0);
                 //parse the bumper clicks
                     com2LeftBumper =  (gamepad2.left_bumper ? 1 : 0);
                     com2RightBumper = (gamepad2.right_bumper ? 1 : 0);
@@ -58,9 +61,15 @@ public class RoverMovement extends LinearOpMode {
                     strafe =   (gamepad1.right_stick_x)*rover.strafePower;
 
 
-
-                //calculate the arm & stetcher & collector move factor+
-                    armMove = Math.pow(-gamepad2.left_stick_y,3);
+                    double armY = -gamepad2.left_stick_y;
+                //calculate the arm & stetcher & collector move factor
+                    double armPower = rover.armPower;
+                    if(armY >= 0){
+                        armPower = rover.armPower;
+                    }else if(armY < 0){
+                        armPower = 0.2;
+                    }
+                    armMove = (armY*armPower) - (latchOn*rover.armPower);
                     strmove = gamepad2.right_stick_y;
                     collect = com2RightBumper - com2LeftBumper;
 
@@ -113,8 +122,7 @@ public class RoverMovement extends LinearOpMode {
              */
             //arm  movement
             for (int i = 0; i < rover.armMotors.length; i++) {
-                    rover.armMotors[i].setPower(armMove *
-                            rover.armPower);
+                    rover.armMotors[i].setPower(armMove);
             }
 
             //collector movement
@@ -126,13 +134,13 @@ public class RoverMovement extends LinearOpMode {
                     rover.stretchPower);
             for(int i =0;i<rover.latches.length;i++) {
                 if (latchOpen) {
-                    if(i%2==0) {
+                    if(i%2 == 0) {
                         rover.latches[i].setPosition(0);
                     }else{
                         rover.latches[i].setPosition(1);
                     }
                 } else {
-                    if(i%2==0) {
+                    if(i%2 == 0) {
                         rover.latches[i].setPosition(1);
                     }else{
                         rover.latches[i].setPosition(0);

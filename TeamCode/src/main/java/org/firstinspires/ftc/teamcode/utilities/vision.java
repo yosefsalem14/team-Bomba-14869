@@ -10,8 +10,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.internal.vuforia.externalprovider.CameraMode;
-import org.firstinspires.ftc.robotcore.internal.vuforia.externalprovider.FrameFormat;
 import java.util.List;
 
 
@@ -19,7 +17,6 @@ public class vision {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-
 
     private static final String VUFORIA_KEY = "Ae31TOj/////AAABmU6qla4qL0GxgNm3Sj+5YWQXbuPYfw459YaMe+A/w13jJTx4ZE0ArONrBmezY2yfFQB4wsBQzmBif8AFghBNyvrIFTCjzGUePnyNDwghP5UZt1ed/yUkkK3PmGpxHQ8VLJvLogJ/2/MvG6g+H9mrvIWSnurJSnkNbr96s4umRABLLkhBSCd/mN2HwbUkXL9xNpipvdeNqWIrpH4Mt04aa81wgFQBxhCbqFZYwEfM+VnGnttvCIx1tcI1YI0ktylCCL3lwXPPCNNdbs89xrJamIMB7zrKNEJ/S08mKCCDKJO2W2o2yK3JzbdWNXh//fsEm5N+OfZKgBjGz8IM082RLQT7RZPVhKGJyl6D2AniDyVF";
 
@@ -43,7 +40,14 @@ public class vision {
         }
     }
 
-
+    public int sign(double num){
+        if(num>0){
+            return 1;
+        }else if(num<0){
+            return -1;
+        }
+        return 0;
+    }
     public int getIter(){
         return this.runs;
     }
@@ -65,13 +69,14 @@ public class vision {
                         Recognition recognition = updatedRecognitions.get(x);
                         if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
                             gold = new DetectedObject((int) recognition.getLeft()
-                                    ,recognition.estimateAngleToObject(AngleUnit.DEGREES));
+                                    ,this.calcAngle(recognition,AngleUnit.DEGREES));
+
                         } else if (silver1.getPos() == -1) {
                             silver1 = new DetectedObject((int) recognition.getLeft()
-                                    ,recognition.estimateAngleToObject(AngleUnit.DEGREES));
+                                    ,this.calcAngle(recognition,AngleUnit.DEGREES));
                         } else {
                             silver2 = new DetectedObject((int) recognition.getLeft()
-                                    ,recognition.estimateAngleToObject(AngleUnit.DEGREES));
+                                    ,this.calcAngle(recognition,AngleUnit.DEGREES));
                         }
                     }
                     int goldMineralX = gold.getPos();
@@ -79,21 +84,27 @@ public class vision {
                     int silverMineral2X = silver2.getPos();
                     if (updatedRecognitions.size() == 2) {
                         if (goldMineralX == -1) {
-                            gold.setID(3);
-                        } else if (goldMineralX > silverMineral1X) {
-                            gold.setID(2);
+                            gold.setID(ObjectPositions.RIGHT);//the positions are only for identifications
+                            // TODO: mention this
+                            gold.setAngle(-sign(silver1.getAngle())*25);
+                        } else if (goldMineralX < silverMineral1X) {
+                            gold.setID(ObjectPositions.CEMTER);
+                        }else {
+                            gold.setID(ObjectPositions.LEFT);
                         }
-                        gold.setID(1);
                     } else if (updatedRecognitions.size() == 3) {
                         if(goldMineralX!=-1) {
                             if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                                gold.setID(1);//left
+                                gold.setID(ObjectPositions.LEFT);
                             } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                                gold.setID(3);//right
-                            }
-                              gold.setID(2);//center
+                                gold.setID(ObjectPositions.CEMTER);
 
-                    }
+                            }else{
+                                gold.setID(ObjectPositions.RIGHT);
+                            }
+                    }else{
+                            gold.setID(ObjectPositions.UNKNOWN);
+                        }
                 }
             }
         }
@@ -105,7 +116,16 @@ public class vision {
             tfod.shutdown();
         }
     }
+    public double calcAngle(Recognition R,AngleUnit angleUnit) {
+        float focalLength = vuforia.getCameraCalibration().getFocalLength().getData()[0];
+        double adjacentSideLength = focalLength;
 
+        double oppositeSideLength = ((R.getTop()+R.getBottom()) * 0.5f) - (0.5f * R.getImageHeight());
+
+        double tangent = oppositeSideLength / adjacentSideLength;
+        double angle = angleUnit.fromRadians(Math.atan(tangent));
+        return angle;
+    }
 
 
 
@@ -116,18 +136,15 @@ public class vision {
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = CameraDirection.BACK;
-        //  Instantiate the Vuforia engine
+        parameters.cameraMonitorFeedback = VuforiaLocalizer.Parameters.CameraMonitorFeedback.NONE;
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
     }
     private void initTfod() {
         int tfodMonitorViewId = this.hw.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", this.hw.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);//TODO tfodMonitorViewId;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }

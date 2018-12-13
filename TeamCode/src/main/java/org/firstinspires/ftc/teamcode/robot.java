@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -29,15 +30,16 @@ public class Robot {
     //EDIT THESE VALUES TO CHANGE POWERS//
     ////////////////////////////////////
     final double movePower = 0.7;     //
-    final double turnPower = 1;       //
-    final double strafePower = 0.6;   //
-    final double armPower = 0.6;      //
+    final double turnPower = 0.8;       //
+    final double strafePower = 1;   //
+    final double armPower = 1;      //
     final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
     final double stretchPower = 1;    //
     ////////////////////////////////////
     /*
      * get the hardware map
      */
+
     private HardwareMap hw = null;
 
     /*

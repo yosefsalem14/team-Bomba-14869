@@ -9,6 +9,9 @@ import org.firstinspires.ftc.teamcode.utilities.Commands;
 //Log.i("info","going forwards");
 //Use Log.i() for debugging!
 //Can now debug easilly :>
+
+
+//TODO: fix PID coefficients, make sure recognition works first!
 @Autonomous(name="TESTING")
 public class AUTOT extends Auto {
     Robot rover = new Robot();
@@ -20,23 +23,16 @@ public class AUTOT extends Auto {
         Init();
         telemetry.addData("status","ready for start!");
         telemetry.update();
+
         waitForStart();
-        if(opModeIsActive()) {
-            double goldPos = getGoldPosition();
-            execute(AutoDrivetype.ENCODER_MOVE,16,3);
-            execute(AutoDrivetype.IMU_TURN, (int)goldPos, 4*sign(goldPos));
-            execute(AutoDrivetype.ENCODER_MOVE,28,4);
-            execute(AutoDrivetype.ENCODER_MOVE,-28,4);
-            execute(AutoDrivetype.IMU_TURN,0,4);
-        }
-    }
-    public int sign(double num){
-        if(num>0){
-            return 1;
-        }else if(num<0){
-            return -1;
-        }
-        return 0;
+        int goldPos   = -(int)(getGoldPosition());
+        execute(AutoDrivetype.IMU_TURN,goldPos,3);
+        execute(AutoDrivetype.ENCODER_MOVE,48,3);
+        execute(AutoDrivetype.ENCODER_MOVE,-16,3);
+        execute(AutoDrivetype.IMU_TURN,-90,3);
+        execute(AutoDrivetype.ENCODER_MOVE,48,3);
+        execute(AutoDrivetype.IMU_TURN,-135,3);
+        execute(AutoDrivetype.ENCODER_MOVE,26,3);
     }
     public void Init(){
         rover.init(hardwareMap);
@@ -59,7 +55,7 @@ public class AUTOT extends Auto {
          turn = turn_I;
          strafe = strafe_I;
     }
-    public void execute(AutoDrivetype movement,int goal,int timeOut)throws InterruptedException{
+    public void execute(AutoDrivetype movement,int goal,double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
                 autoDrive(movement,move,goal,timeOut);
@@ -74,3 +70,4 @@ public class AUTOT extends Auto {
 
     }
 }
+
