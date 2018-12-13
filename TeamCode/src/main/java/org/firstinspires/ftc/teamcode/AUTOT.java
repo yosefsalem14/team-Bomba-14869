@@ -26,13 +26,13 @@ public class AUTOT extends Auto {
 
         waitForStart();
         int goldPos   = -(int)(getGoldPosition());
-        execute(AutoDrivetype.IMU_TURN,goldPos,3);
-        execute(AutoDrivetype.ENCODER_MOVE,48,3);
-        execute(AutoDrivetype.ENCODER_MOVE,-16,3);
-        execute(AutoDrivetype.IMU_TURN,-90,3);
-        execute(AutoDrivetype.ENCODER_MOVE,48,3);
-        execute(AutoDrivetype.IMU_TURN,-135,3);
-        execute(AutoDrivetype.ENCODER_MOVE,26,3);
+        execute(AutoDrivetype.IMU_TURN,goldPos,5);
+        execute(AutoDrivetype.ENCODER_MOVE,48,5);
+        execute(AutoDrivetype.ENCODER_MOVE,-16,5);
+        execute(AutoDrivetype.IMU_TURN,-90,5);
+        execute(AutoDrivetype.ENCODER_MOVE,48,5);
+        execute(AutoDrivetype.IMU_TURN,-135,5);
+        execute(AutoDrivetype.ENCODER_MOVE,26,5);
     }
     public void Init(){
         rover.init(hardwareMap);

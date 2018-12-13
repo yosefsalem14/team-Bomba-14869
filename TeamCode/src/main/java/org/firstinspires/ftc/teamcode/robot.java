@@ -32,7 +32,7 @@ public class Robot {
     final double movePower = 0.7;     //
     final double turnPower = 0.8;       //
     final double strafePower = 1;   //
-    final double armPower = 1;      //
+    final double armPower = 0.8;      //
     final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
     final double stretchPower = 1;    //
     ////////////////////////////////////
@@ -74,13 +74,13 @@ public class Robot {
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
 //            //set the direction
-            for(int i =0;i<mainMotors.length;i++){
-                if((i & 0x1)==0)
-                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-                else
-                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
-
-            }
+//            for(int i =0;i<mainMotors.length;i++){
+//                if((i & 0x1)==0)
+//                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
+//                else
+//                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+//
+//            }
         } catch (Exception notF) {
             for (int i = 0; i < mainMotors.length; i++) {
                 mainMotors[i] = null;
@@ -101,9 +101,9 @@ public class Robot {
 
             for (int i = 0; i < armMotors.length; i++) {
                 if ((i & 0x1) == 0)
-                    armMotors[i].setDirection(DcMotor.Direction.FORWARD);
-                else
                     armMotors[i].setDirection(DcMotor.Direction.REVERSE);
+                else
+                    armMotors[i].setDirection(DcMotor.Direction.FORWARD);
 
                 armMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             }
@@ -146,28 +146,28 @@ public class Robot {
         /*
         get the latch servos
          */
-        try {
-            latches[0] = this.hw.get(Servo.class, "latchRight");
-            latches[1] = this.hw.get(Servo.class, "latchLeft");
-        } catch (Exception notF) {
-            for (int i = 0; i < latches.length; i++) {
-                latches[i] = null;
-            }
-        }
-        try{
-            cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
-            cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
-        }catch(Exception e){
-            for(int i =0;i<cubeIntakes.length;i++){
-                cubeIntakes[i] = null;
-            }
-        }
-        for(int i =0;i<latches.length;i++){
-            latches[i].setDirection(Servo.Direction.FORWARD);
-        }
-
-            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
-        cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
+//        try {
+//            latches[0] = this.hw.get(Servo.class, "latchRight");
+//            latches[1] = this.hw.get(Servo.class, "latchLeft");
+//        } catch (Exception notF) {
+//            for (int i = 0; i < latches.length; i++) {
+//                latches[i] = null;
+//            }
+//        }
+//        try{
+//            cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
+//            cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
+//        }catch(Exception e){
+//            for(int i =0;i<cubeIntakes.length;i++){
+//                cubeIntakes[i] = null;
+//            }
+//        }
+//        for(int i =0;i<latches.length;i++){
+//            latches[i].setDirection(Servo.Direction.FORWARD);
+//        }
+//
+//            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
+//        cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
 
     }
     }

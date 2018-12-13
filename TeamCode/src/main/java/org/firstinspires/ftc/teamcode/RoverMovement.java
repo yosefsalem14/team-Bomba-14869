@@ -69,7 +69,7 @@ public class RoverMovement extends LinearOpMode {
                     }else if(armY < 0){
                         armPower = 0.2;
                     }
-                    armMove = (armY*armPower) - (latchOn*rover.armPower);
+                    armMove = (armY*armPower) - (latchOn);
                     strmove = gamepad2.right_stick_y;
                     collect = com2RightBumper - com2LeftBumper;
 

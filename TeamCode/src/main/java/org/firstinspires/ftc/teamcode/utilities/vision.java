@@ -86,7 +86,7 @@ public class vision {
                         if (goldMineralX == -1) {
                             gold.setID(ObjectPositions.RIGHT);//the positions are only for identifications
                             // TODO: mention this
-                            gold.setAngle(-sign(silver1.getAngle())*25);
+                            gold.setAngle(sign(silver1.getAngle())*25.0);
                         } else if (goldMineralX < silverMineral1X) {
                             gold.setID(ObjectPositions.CEMTER);
                         }else {
