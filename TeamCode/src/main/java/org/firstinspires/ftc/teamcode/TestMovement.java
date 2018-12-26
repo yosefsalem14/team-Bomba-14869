@@ -16,22 +16,18 @@ public class TestMovement extends LinearOpMode {
         backRight   = hardwareMap.get(DcMotor.class,"backRight");
         frontLeft   = hardwareMap.get(DcMotor.class,"frontLeft");
         frontRight = hardwareMap.get(DcMotor.class,"frontRight");
-
-
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
-        frontLeft.setDirection(DcMotor.Direction.FORWARD);
-        frontRight.setDirection(DcMotor.Direction.FORWARD);
-
+        telemetry.addData("status","ready");
+        telemetry.update();
         waitForStart();
         while(opModeIsActive()){
             double move = -gamepad1.left_stick_y;
-            double turn  = gamepad1.left_stick_x;
+            double turn  = gamepad1.right_stick_x;
+            double strafe = (gamepad1.right_trigger - gamepad1.left_trigger)*-1;
 
-            backLeft.setPower(Range.clip(move+turn,-1,1));
-            backRight.setPower(Range.clip(move+turn,-1,1));
-            frontLeft.setPower(Range.clip(move+turn,-1,1));
-            frontRight.setPower(Range.clip(move+turn,-1,1));
+            backLeft.setPower(Range.clip(move+turn+strafe,-1,1));
+            backRight.setPower(Range.clip(move-turn-strafe,-1,1));
+            frontLeft.setPower(Range.clip(move+turn-strafe,-1,1));
+            frontRight.setPower(Range.clip(move-turn+strafe ,-1,1));
 
 
 

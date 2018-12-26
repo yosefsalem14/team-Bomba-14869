@@ -2,40 +2,28 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
+import android.util.Log;
 /*
     ///////main TeleOP class/////
     this will be used for the main robot
     TODO:
-    -work on the main robots [☺]
-    -work on the arm motors[☺]
-    -work on the extender motors[☺]
-    -find the ideal power values[☺]
-
-
     this is almost done, just fix the comments!
  */
 
 @TeleOp(name="rover movement",group="movement")
 
 public class RoverMovement extends LinearOpMode {
-    robot rover = new robot();
+    Robot rover = new Robot();
 
     @Override
     public void runOpMode(){//throws InterruptedException {
         rover.init(hardwareMap);
-
         //define controller input variables
             double move =            0.0;
-            boolean latchOpen = false;
-            boolean latching = false;
+            boolean latchOpen =      false;
             double armMove =         0.0;
             double turn =            0.0;
-            double leftBumper =      0.0;
-            double rightBumper =     0.0;
             double strafe =          0.0;
             double leftTrigger =     0.0;
             double rightTrigger =    0.0;
@@ -43,18 +31,19 @@ public class RoverMovement extends LinearOpMode {
             double com2LeftBumper =  0.0;
             double com2RightBumper = 0.0;
             double collect =         0.0;
-        for(int i =0;i<rover.latches.length;i++){
-            rover.latches[i].setDirection(Servo.Direction.FORWARD);
-            rover.latches[i].setPosition(0.7);
-        }
+            double latchOn = 0.0;
         boolean once = true;
+        boolean onceIntakes = true;
+        boolean CubeIntakesOpen = false;
+        telemetry.addData("status","ready for start!");
+        telemetry.update();
         waitForStart();
         while(opModeIsActive()) {
 
             //get all the variables:
+                //parse the Dpad clicks
+                    latchOn = (gamepad2.dpad_up ? 1 : 0);
                 //parse the bumper clicks
-                    leftBumper =      (gamepad1.left_bumper ? 1 : 0);
-                    rightBumper =     (gamepad1.right_bumper ? 1 : 0);
                     com2LeftBumper =  (gamepad2.left_bumper ? 1 : 0);
                     com2RightBumper = (gamepad2.right_bumper ? 1 : 0);
 
@@ -67,27 +56,41 @@ public class RoverMovement extends LinearOpMode {
 
                 //calculate the turn & strafe & move factor
 
-                    move =     -gamepad1.left_stick_y;
-                    turn =     rightTrigger - leftTrigger;
-                    strafe =   rightBumper - leftBumper;
+                    move =     (-gamepad1.left_stick_y)*rover.movePower;
+                    turn =     (rightTrigger - leftTrigger)*rover.turnPower;
+                    strafe =   (gamepad1.right_stick_x)*rover.strafePower;
 
 
-
-                //calculate the arm & stetcher & collector move factor+
-                    armMove = -gamepad2.left_stick_y;
+                    double armY = -gamepad2.left_stick_y;
+                //calculate the arm & stetcher & collector move factor
+                    double armPower = rover.armPower;
+                    if(armY >= 0){
+                        armPower = rover.armPower;
+                    }else if(armY < 0){
+                        armPower = 0.2;
+                    }
+                    armMove = (armY*armPower) - (latchOn);
                     strmove = gamepad2.right_stick_y;
                     collect = com2RightBumper - com2LeftBumper;
 
                 //open and close the latches
-                boolean APressed = gamepad2.x;
+                    boolean APressed = gamepad2.x;
+                    boolean YPressed = gamepad2.y;
                 if(APressed){
                     if(once) {
                         latchOpen = !latchOpen;
-                        latching = !latching;
                         once=!once;
                     }
                 }else{
                     once = true;
+                }
+                if(YPressed){
+                    if(onceIntakes){
+                        CubeIntakesOpen = !CubeIntakesOpen;
+                        onceIntakes = !onceIntakes;
+                    }
+                }else{
+                    onceIntakes = true;
                 }
 
             /*
@@ -96,13 +99,13 @@ public class RoverMovement extends LinearOpMode {
               */
             //calculate the specific motor power
                 double leftBack =   Range.clip(move - turn + strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
                 double leftFront =  Range.clip(move - turn - strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
                 double rightBack =  Range.clip(move + turn - strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
                 double rightFront = Range.clip(move + turn + strafe,
-                        -rover.movePower,rover.movePower);
+                        -1,1);
 
 
             //do the movements:
@@ -119,18 +122,7 @@ public class RoverMovement extends LinearOpMode {
              */
             //arm  movement
             for (int i = 0; i < rover.armMotors.length; i++) {
-                if(latching) {
-                    if (armMove > 0) {
-                        rover.armMotors[i].setPower(armMove *
-                                rover.armPower);
-                    } else {
-                        rover.armMotors[i].setPower(armMove *
-                                rover.armPower/7);
-                    }
-                }else{
-                    rover.armMotors[i].setPower(armMove *
-                            rover.armPower);
-                }
+                    rover.armMotors[i].setPower(armMove);
             }
 
             //collector movement
@@ -142,19 +134,34 @@ public class RoverMovement extends LinearOpMode {
                     rover.stretchPower);
             for(int i =0;i<rover.latches.length;i++) {
                 if (latchOpen) {
-                    if(i%2==0) {
+                    if(i%2 == 0) {
                         rover.latches[i].setPosition(0);
                     }else{
                         rover.latches[i].setPosition(1);
                     }
                 } else {
-                    if(i%2==0) {
+                    if(i%2 == 0) {
                         rover.latches[i].setPosition(1);
                     }else{
                         rover.latches[i].setPosition(0);
                     }
                 }
             }
+
+
+            for(int i =0;i<rover.cubeIntakes.length;i++) {
+                if (CubeIntakesOpen) {
+                        Log.i("block Intake","Pressed boxIntake");
+                        if(i%2==0){
+                            rover.cubeIntakes[i].setPosition((77.0/180.0));
+                        }else
+                        rover.cubeIntakes[i].setPosition((85.0/180.0));
+
+                } else {
+                        rover.cubeIntakes[i].setPosition(0);
+                }
+            }
+
             //output
             if(armMove!=0)
                 telemetry.addData("player2_moves",
@@ -170,10 +177,6 @@ public class RoverMovement extends LinearOpMode {
                         "idle");
 
 
-            telemetry.addLine();
-            telemetry.addData("servo position1",rover.latches[0].getPosition());
-            telemetry.addData("servo position1",rover.latches[1].getPosition());
-            telemetry.addLine();
 
             //show all the input values
             telemetry.addData("move",
@@ -198,7 +201,6 @@ public class RoverMovement extends LinearOpMode {
             telemetry.addData("collector",
                     "collector value= " +
                             formatString(collect));
-
             telemetry.addLine();
 
 
@@ -206,6 +208,8 @@ public class RoverMovement extends LinearOpMode {
                     "running");
             telemetry.update();
         }
+
+
     }
     public String formatString(double value){
         return (Math.abs(Math.floor(value*100)) + "%");
