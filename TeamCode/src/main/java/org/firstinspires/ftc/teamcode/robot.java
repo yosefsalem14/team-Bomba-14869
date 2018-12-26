@@ -1,15 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+
+import org.firstinspires.ftc.teamcode.utilities.Commands;
+
 public class Robot {
     DcMotor[] mainMotors = null;
 
@@ -21,8 +21,16 @@ public class Robot {
 
     BNO055IMU imu = null;
     Servo[] latches = null;
-
     Servo[] cubeIntakes = null;
+
+    //2018 auto stuff
+    public Commands[] move;
+
+    public Commands[] turn;
+
+    public Commands[] strafe;
+
+
     //  CRServo backMotor = null;
     /* Define the powers
      *
@@ -58,117 +66,138 @@ public class Robot {
         NOTE: might use a bit of threading to make this more efficient
 
      */
-    public void init(HardwareMap hw) {
-        this.hw = hw;
-        /**
-         * get the movement motors
-         *
-         */
-        try {
-            mainMotors[0] = this.hw.get(DcMotor.class, "backLeft");
-            mainMotors[1] = this.hw.get(DcMotor.class, "backRight");
-            mainMotors[2] = this.hw.get(DcMotor.class, "frontLeft");
-            mainMotors[3] = this.hw.get(DcMotor.class, "frontRight");
-            //run them without an encoder
-            for (int i = 0; i < mainMotors.length; i++) {
-                mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            }
-//            //set the direction
-            for(int i =0;i<mainMotors.length;i++){
-                if((i & 0x1)==0)
-                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-                else
-                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+        public void init(HardwareMap hw) {
+            this.hw = hw;
+            /**
+             * get the movement motors
+             *
+             */
+            try {
+                mainMotors[0] = this.hw.get(DcMotor.class, "backLeft");
+                mainMotors[1] = this.hw.get(DcMotor.class, "backRight");
+                mainMotors[2] = this.hw.get(DcMotor.class, "frontLeft");
+                mainMotors[3] = this.hw.get(DcMotor.class, "frontRight");
+                //run them without an encoder
+                for (int i = 0; i < mainMotors.length; i++) {
+                    mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+    //            //set the direction
+                for(int i =0;i<mainMotors.length;i++){
+                    if((i & 0x1)==0)
+                        mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
+                    else
+                        mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
 
+                }
+            } catch (Exception notF) {
+                for (int i = 0; i < mainMotors.length; i++) {
+                    mainMotors[i] = null;
+                }
             }
-        } catch (Exception notF) {
-            for (int i = 0; i < mainMotors.length; i++) {
-                mainMotors[i] = null;
+
+            /**
+             get the arm motors
+             */
+            try {
+                armMotors[0] = this.hw.get(DcMotor.class, "armRight");
+                armMotors[1] = this.hw.get(DcMotor.class, "armLeft");
+
+                for (int i = 0; i < armMotors.length; i++) {
+                    armMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+
+
+                for (int i = 0; i < armMotors.length; i++) {
+                    if ((i & 0x1) == 0)
+                        armMotors[i].setDirection(DcMotor.Direction.REVERSE);
+                    else
+                        armMotors[i].setDirection(DcMotor.Direction.FORWARD);
+
+                    armMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                }
+
+
+            } catch (Exception notF) {
+                for (int i = 0; i < armMotors.length; i++) {
+                    armMotors[i] = null;
+                }
             }
+            /**
+             * get the stretcher motors
+             */
+            try {
+                stretcher = this.hw.get(DcMotor.class, "stretcher");
+
+                stretcher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                stretcher.setDirection(DcMotor.Direction.REVERSE);
+
+
+            } catch (Exception notF) {
+                stretcher = null;
+            }
+            /**
+             * get the collector motor
+             */
+            try {
+                collector = this.hw.get(DcMotor.class, "collector");
+
+                collector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                collector.setDirection(DcMotor.Direction.REVERSE);
+            } catch (Exception notF) {
+
+                collector = null;
+            }
+
+
+            /*
+            get the latch servos
+             */
+            try {
+                latches[0] = this.hw.get(Servo.class, "latchRight");
+                latches[1] = this.hw.get(Servo.class, "latchLeft");
+            } catch (Exception notF) {
+                for (int i = 0; i < latches.length; i++) {
+                    latches[i] = null;
+                }
+            }
+            try{
+                cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
+                cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
+            }catch(Exception e){
+                for(int i =0;i<cubeIntakes.length;i++){
+                    cubeIntakes[i] = null;
+                }
+            }
+            for(int i =0;i<latches.length;i++){
+                latches[i].setDirection(Servo.Direction.FORWARD);
+            }
+
+                cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
+            cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
+
         }
 
-        /**
-         get the arm motors
-         */
-        try {
-            armMotors[0] = this.hw.get(DcMotor.class, "armRight");
-            armMotors[1] = this.hw.get(DcMotor.class, "armLeft");
 
-            for (int i = 0; i < armMotors.length; i++) {
-                armMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            }
+        public void init2018Auto() {
+            DcMotor[] right = {this.mainMotors[0], this.mainMotors[2]};
+            DcMotor[] left = {this.mainMotors[1], this.mainMotors[3]};
+            DcMotor[] x1 = {this.mainMotors[0], this.mainMotors[3]};
+            DcMotor[] x2 = {this.mainMotors[1], this.mainMotors[2]};
 
 
-            for (int i = 0; i < armMotors.length; i++) {
-                if ((i & 0x1) == 0)
-                    armMotors[i].setDirection(DcMotor.Direction.REVERSE);
-                else
-                    armMotors[i].setDirection(DcMotor.Direction.FORWARD);
-
-                armMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            }
-
-
-        } catch (Exception notF) {
-            for (int i = 0; i < armMotors.length; i++) {
-                armMotors[i] = null;
-            }
+            Commands rightFwd = new Commands(right, 0.5, Commands.Direction.FORWARD);
+            Commands rightRvrs = new Commands(right, 0.5, Commands.Direction.REVERSE);
+            Commands leftFwd = new Commands(left, 0.5, Commands.Direction.FORWARD);
+            Commands strafe1 = new Commands(x1, 0.5, Commands.Direction.REVERSE);
+            Commands strafe2 = new Commands(x2, 0.5, Commands.Direction.FORWARD);
+            Commands[] move_I = {leftFwd, rightFwd};
+            Commands[] turn_I = {rightRvrs, leftFwd};
+            Commands[] strafe_I = {strafe2, strafe1};
+            this.move = move_I;
+            this.turn = turn_I;
+            this.strafe = strafe_I;
         }
-        /**
-         * get the stretcher motors
-         */
-        try {
-            stretcher = this.hw.get(DcMotor.class, "stretcher");
-
-            stretcher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-            stretcher.setDirection(DcMotor.Direction.REVERSE);
-
-
-        } catch (Exception notF) {
-            stretcher = null;
-        }
-        /**
-         * get the collector motor
-         */
-        try {
-            collector = this.hw.get(DcMotor.class, "collector");
-
-            collector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-            collector.setDirection(DcMotor.Direction.REVERSE);
-        } catch (Exception notF) {
-
-            collector = null;
-        }
-
-
-        /*
-        get the latch servos
-         */
-        try {
-            latches[0] = this.hw.get(Servo.class, "latchRight");
-            latches[1] = this.hw.get(Servo.class, "latchLeft");
-        } catch (Exception notF) {
-            for (int i = 0; i < latches.length; i++) {
-                latches[i] = null;
-            }
-        }
-        try{
-            cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
-            cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
-        }catch(Exception e){
-            for(int i =0;i<cubeIntakes.length;i++){
-                cubeIntakes[i] = null;
-            }
-        }
-        for(int i =0;i<latches.length;i++){
-            latches[i].setDirection(Servo.Direction.FORWARD);
-        }
-
-            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
-        cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
-
-    }
     }
 

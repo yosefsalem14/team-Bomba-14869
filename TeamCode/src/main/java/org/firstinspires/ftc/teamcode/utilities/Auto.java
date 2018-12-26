@@ -9,11 +9,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.teamcode.Robot;
 
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
 public abstract class Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
+    private Robot robot;
     private PID motorDist;
     private PID motorTurn;
     private Orientation angles;
@@ -49,6 +51,7 @@ public abstract class Auto extends LinearOpMode {
         angles=new Orientation();
         objectDetector.init();
         getIMU();
+        //TODO: Tune the PIDs!
         motorDist = new PID(0.001340000,0.0,0.00006899);
         motorTurn = new PID(0.05549998542908,0.0,0.000598858);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
@@ -244,7 +247,28 @@ public abstract class Auto extends LinearOpMode {
         to memorise functions, more functions could potentially get added later
 
      */
+    //TODO: add comments
+    public void initAuto(Robot robot){
+        this.robot = robot;
+        robot.init(hardwareMap);
+        robot.init2018Auto();
+        initialize();
 
+    }
+    public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
+        switch(movement){
+            case ENCODER_MOVE:
+                autoDrive(movement,this.robot.move,goal,timeOut);
+                break;
+            case IMU_TURN:
+                autoDrive(movement,this.robot.turn,goal,timeOut);
+                break;
+            case ENCODER_STRAFE:
+                autoDrive(movement,this.robot.strafe,goal,timeOut);
+                break;
+        }
+
+    }
     public void autoDrive(AutoDrivetype moveType,Commands[] command,double goal,double time)throws InterruptedException{
         time = Math.abs(time);
         switch(moveType){
