@@ -21,7 +21,7 @@ public class AUTOT extends Auto {
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
-        double gold = getGoldPosition();
+        double gold = getGoldPosition(6);
         execute(AutoDrivetype.IMU_TURN,gold,6);
         execute(AutoDrivetype.ENCODER_MOVE,25,6);
     }

@@ -9,7 +9,11 @@ public class DetectedObject {
         this.angle = angle;
         this.ID = ObjectPositions.UNKNOWN;
     }
-
+    public DetectedObject(){
+        this.pos = 0;
+        this.angle = 0;
+        this.ID = ObjectPositions.CEMTER;
+    }
     public int getPos(){
         return this.pos;
     }
@@ -25,5 +29,9 @@ public class DetectedObject {
     public void setAngle(double ang){
         this.angle = ang;
     }
-
+    public void set(DetectedObject object){
+        this.pos = object.pos;
+        this.angle = object.angle;
+        this.ID = object.ID;
+    }
 }

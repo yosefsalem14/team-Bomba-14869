@@ -1,16 +1,14 @@
 package org.firstinspires.ftc.teamcode.utilities;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.Robot;
-
+import java.util.ArrayList;
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
 public abstract class Auto extends LinearOpMode {
@@ -21,6 +19,7 @@ public abstract class Auto extends LinearOpMode {
     private Orientation angles;
     private BNO055IMU imu;
     private vision objectDetector;
+    final int ACCURACY = 10;
     /* get the IMU sensor
 
      */
@@ -64,37 +63,39 @@ public abstract class Auto extends LinearOpMode {
     private void act(){
         objectDetector.activate();
     }
-    private DetectedObject[] getDetections(){
-        DetectedObject[] objects = new DetectedObject[10];
+    private ArrayList<DetectedObject> getDetections(double timeOut){
+        ArrayList<DetectedObject> objects = new ArrayList<>();
+        //it goes to the last read when it fails
         int i = 0;
-        while(i<objects.length&&opModeIsActive()){
+        runtime.reset();
+        while(i<this.ACCURACY&&opModeIsActive()&&runtime.seconds()<=timeOut){
             DetectedObject nextPos = objectDetector.getPos();
-            if(nextPos.getID()!=ObjectPositions.UNKNOWN)
-                objects[i++] = nextPos;
+            objects.add(nextPos);
+            i++;
         }
         return objects;
     }
     private void shut(){
             objectDetector.shutdown();
     }
-    public DetectedObject getMatchingId(DetectedObject[] detections,int ID){
-        for(int i =0;i<detections.length;i++){
-            int currentValue = detections[i].getID().getIntVal();
+    public DetectedObject getMatchingId(ArrayList<DetectedObject> detections,int ID){
+        for(int i =0;i<detections.size();i++){
+            int currentValue = detections.get(i).getID().getIntVal();
             if(currentValue == ID+1){
-                return detections[i];
+                return detections.get(i);
             }
         }
         return new DetectedObject(0,0);
     }
-    public double getGoldPosition(){
+    public double getGoldPosition(double timeOut){
         this.act();
-        DetectedObject[] detections = this.getDetections();
+        ArrayList<DetectedObject> detections = this.getDetections(timeOut);
         int[] counters = new int[3];
         double GOLD_POS=0;
         int maxCounter = 0;
         int index = 0;
-        for(int i = 0;i<detections.length;i++){
-            int pos = detections[i].getID().getIntVal();
+        for(int i = 0;i<detections.size();i++){
+            int pos = detections.get(i).getID().getIntVal();
             counters[pos-1]++;
         }
         for(int i = 0;i<counters.length;i++){
