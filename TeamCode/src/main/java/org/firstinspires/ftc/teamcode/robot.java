@@ -74,13 +74,13 @@ public class Robot {
                 mainMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
 //            //set the direction
-//            for(int i =0;i<mainMotors.length;i++){
-//                if((i & 0x1)==0)
-//                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-//                else
-//                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
-//
-//            }
+            for(int i =0;i<mainMotors.length;i++){
+                if((i & 0x1)==0)
+                    mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
+                else
+                    mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+
+            }
         } catch (Exception notF) {
             for (int i = 0; i < mainMotors.length; i++) {
                 mainMotors[i] = null;
@@ -146,28 +146,28 @@ public class Robot {
         /*
         get the latch servos
          */
-//        try {
-//            latches[0] = this.hw.get(Servo.class, "latchRight");
-//            latches[1] = this.hw.get(Servo.class, "latchLeft");
-//        } catch (Exception notF) {
-//            for (int i = 0; i < latches.length; i++) {
-//                latches[i] = null;
-//            }
-//        }
-//        try{
-//            cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
-//            cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
-//        }catch(Exception e){
-//            for(int i =0;i<cubeIntakes.length;i++){
-//                cubeIntakes[i] = null;
-//            }
-//        }
-//        for(int i =0;i<latches.length;i++){
-//            latches[i].setDirection(Servo.Direction.FORWARD);
-//        }
-//
-//            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
-//        cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
+        try {
+            latches[0] = this.hw.get(Servo.class, "latchRight");
+            latches[1] = this.hw.get(Servo.class, "latchLeft");
+        } catch (Exception notF) {
+            for (int i = 0; i < latches.length; i++) {
+                latches[i] = null;
+            }
+        }
+        try{
+            cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
+            cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
+        }catch(Exception e){
+            for(int i =0;i<cubeIntakes.length;i++){
+                cubeIntakes[i] = null;
+            }
+        }
+        for(int i =0;i<latches.length;i++){
+            latches[i].setDirection(Servo.Direction.FORWARD);
+        }
+
+            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
+        cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
 
     }
     }

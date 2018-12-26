@@ -30,6 +30,10 @@ public class Commands  {
         Commands constructor, takes an array of DcMotors, their desired power
         and their Direction.
      */
+    public Commands(){
+        this.power = 0;
+        this.direction = 0;
+    }
     public Commands(DcMotor[] motors,double power,Direction D){
         this.motors = motors;
         this.power = power;

@@ -21,18 +21,12 @@ public class AUTOT extends Auto {
     @Override
     public void runOpMode() throws InterruptedException{
         Init();
-        telemetry.addData("status","ready for start!");
+        telemetry.addData("status","ready11111 for start!");
         telemetry.update();
 
         waitForStart();
-        int goldPos   = -(int)(getGoldPosition());
-        execute(AutoDrivetype.IMU_TURN,goldPos,5);
-        execute(AutoDrivetype.ENCODER_MOVE,48,5);
-        execute(AutoDrivetype.ENCODER_MOVE,-16,5);
-        execute(AutoDrivetype.IMU_TURN,-90,5);
-        execute(AutoDrivetype.ENCODER_MOVE,48,5);
-        execute(AutoDrivetype.IMU_TURN,-135,5);
-        execute(AutoDrivetype.ENCODER_MOVE,26,5);
+        execute(AutoDrivetype.ENCODER_MOVE,16,8000);
+        execute(AutoDrivetype.IMU_TURN,45,9000);
     }
     public void Init(){
         rover.init(hardwareMap);

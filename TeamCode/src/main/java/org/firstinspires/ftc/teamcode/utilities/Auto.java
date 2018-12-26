@@ -50,7 +50,7 @@ public abstract class Auto extends LinearOpMode {
         objectDetector.init();
         getIMU();
         motorDist = new PID(0.001340000,0.0,0.00006899);
-        motorTurn = new PID(0.01549998542908,0.0,0.000598858);
+        motorTurn = new PID(0.05549998542908,0.0,0.000598858);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
 
