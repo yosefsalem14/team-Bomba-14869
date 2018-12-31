@@ -7,7 +7,6 @@ import android.util.Log;
 /*
     ///////main TeleOP class/////
     this will be used for the main robot
-    TODO:
     this is almost done, just fix the comments!
  */
 

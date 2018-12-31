@@ -24,7 +24,7 @@ public abstract class Auto extends LinearOpMode {
     /* get the IMU sensor
 
      */
-    public void getIMU(){
+    private void getIMU(){
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
@@ -37,7 +37,7 @@ public abstract class Auto extends LinearOpMode {
 
     /* reset all the PID's used in the Auto class
      */
-    public void reset(){
+    private void reset(){
         motorTurn.reset();
         motorDist.reset();
     }
@@ -46,7 +46,7 @@ public abstract class Auto extends LinearOpMode {
     /*
      initialize all the variables(including PIDs)
      */
-    public void initialize(){
+    private void initialize(){
         objectDetector = new vision(hardwareMap);
         angles=new Orientation();
         objectDetector.init();
@@ -58,9 +58,8 @@ public abstract class Auto extends LinearOpMode {
     }
 
     /*
-        ******VISION FUNCTIONS*****
-        TODO: add proper comments that explain what they do :>
-    */
+            ***VISION FUNCTIONS***
+     */
     private void act(){
         objectDetector.activate();
     }
@@ -79,7 +78,7 @@ public abstract class Auto extends LinearOpMode {
     private void shut(){
             objectDetector.shutdown();
     }
-    public DetectedObject getMatchingId(ArrayList<DetectedObject> detections,int ID){
+    private DetectedObject getMatchingId(ArrayList<DetectedObject> detections,int ID){
         for(int i =0;i<detections.size();i++){
             int currentValue = detections.get(i).getID().getIntVal();
             if(currentValue == ID+1){
@@ -88,6 +87,10 @@ public abstract class Auto extends LinearOpMode {
         }
         return new DetectedObject(0,0);
     }
+
+    /*
+        this uses all the functions above and returns the angle of the cube!
+     */
     public double getGoldPosition(double timeOut){
         this.act();
         ArrayList<DetectedObject> detections = this.getDetections(timeOut);
@@ -133,7 +136,7 @@ public abstract class Auto extends LinearOpMode {
         the robot will automatically stop moving if the command times out
         (if the timer count exceeds timeout)
      */
-    public void turn(Commands[] comms,double angle,double timeout) throws InterruptedException{
+    private void turn(Commands[] comms,double angle,double timeout) throws InterruptedException{
         if (opModeIsActive()) {
             reset();
             //rest run time
@@ -242,20 +245,18 @@ public abstract class Auto extends LinearOpMode {
 
 
     /*
-        this will be used by the programmer to call the movement type
-        that he/she wants, this is done so the programmer doesn't have
-        to memorise functions, more functions could potentially get added later
-
+        this will always be called in the start of every autonomous, it will initialize
+        and get everything ready.
      */
-    //TODO: add comments
     public void initAuto(Robot robot){
         this.robot = robot;
         robot.init(hardwareMap);
         robot.init2018Auto();
         initialize();
-
     }
-
+    /*
+        open&close the latching servos
+     */
     public void openServos(){
         for(int i =0;i<this.robot.latches.length;i++){
             if(i%2 == 0) {
@@ -274,6 +275,12 @@ public abstract class Auto extends LinearOpMode {
             }
         }
     }
+    /*
+        this will be used by the programmer to call the movement type
+        that he/she wants, this is done so the programmer doesn't have
+        to memorise functions, more functions could potentially get added later
+
+     */
     public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:

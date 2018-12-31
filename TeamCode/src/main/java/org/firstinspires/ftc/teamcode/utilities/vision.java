@@ -85,7 +85,8 @@ public class vision {
                     if (updatedRecognitions.size() == 2) {
                         if (goldMineralX == -1) {
                             gold.setID(ObjectPositions.RIGHT);//the positions are only for identifications
-                            // TODO: mention this
+                            //if you only see 2 and the golden is not in view,
+                            // turn to teh silver piece that's on the far left
                             gold.setAngle(sign(silver1.getAngle())*25.0);
                         } else if (goldMineralX < silverMineral1X) {
                             gold.setID(ObjectPositions.CEMTER);
