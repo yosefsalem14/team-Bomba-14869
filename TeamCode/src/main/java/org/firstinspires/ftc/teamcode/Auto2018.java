@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.utilities.Commands;
 
 
 //TODO: fix PID coefficients, make sure recognition works first!
-@Autonomous(name="TESTING")
-public class AUTOT extends Auto {
+@Autonomous(name="unlatch")
+public class Auto2018 extends Auto {
     Robot rover = new Robot();
     @Override
     public void runOpMode() throws InterruptedException{
@@ -21,9 +21,9 @@ public class AUTOT extends Auto {
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
-        double gold = getGoldPosition(6);
-        execute(AutoDrivetype.IMU_TURN,gold,6);
-        execute(AutoDrivetype.ENCODER_MOVE,25,6);
+        closeServos();
+        execute(AutoDrivetype.ARM_MOVE,-50,1);
+        execute(AutoDrivetype.ARM_MOVE,50,2);
     }
 
 }

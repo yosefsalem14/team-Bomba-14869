@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.utilities;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -147,9 +148,7 @@ public abstract class Auto extends LinearOpMode {
                         runtime.seconds() < timeout) {
                     angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                     angle = angle%360;
-                    if(angles.firstAngle<0){
-                        angles.firstAngle+=360;
-                    }
+                    angles.firstAngle = angles.firstAngle%360;
 
                     double dist = (angle)-angles.firstAngle;
 
@@ -157,7 +156,7 @@ public abstract class Auto extends LinearOpMode {
                     if(Math.abs(dist)>180) {
                         dist =  -dist;
                     }
-                    double power = motorTurn.getPower(dist);
+                    double power = motorTurn.getPower(-dist);
                     for(Commands command : comms){command.updatePower(power);}
                     //work until all the motors stop or until the time runs out
                 telemetry.addData("angle",angles.firstAngle);
@@ -207,7 +206,7 @@ public abstract class Auto extends LinearOpMode {
                                 C.updatePower(power);
                             }
                             //work until all the motors stop or until the time runs out
-                            telemetry.addData("dist", power);
+                            telemetry.addData("dist", dist);
                             telemetry.update();
                             canRun = command.canMove();
                         }
@@ -256,35 +255,39 @@ public abstract class Auto extends LinearOpMode {
         initialize();
 
     }
+
+    public void openServos(){
+        for(int i =0;i<this.robot.latches.length;i++){
+            if(i%2 == 0) {
+                this.robot.latches[i].setPosition(0);
+            }else{
+                this.robot.latches[i].setPosition(1);
+            }
+        }
+    }
+    public void closeServos(){
+        for(int i =0;i<this.robot.latches.length;i++){
+            if(i%2 == 0) {
+                this.robot.latches[i].setPosition(1);
+            }else{
+                this.robot.latches[i].setPosition(0);
+            }
+        }
+    }
     public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
-                autoDrive(movement,this.robot.move,goal,timeOut);
+                this.move(this.robot.move,goal,timeOut);
                 break;
             case IMU_TURN:
-                autoDrive(movement,this.robot.turn,goal,timeOut);
+                this.turn(this.robot.turn,goal,timeOut);
                 break;
             case ENCODER_STRAFE:
-                autoDrive(movement,this.robot.strafe,goal,timeOut);
+                this.move(this.robot.strafe,goal,timeOut);
                 break;
+            case ARM_MOVE:
+                this.move(this.robot.armMove,goal,timeOut);
         }
 
-    }
-    public void autoDrive(AutoDrivetype moveType,Commands[] command,double goal,double time)throws InterruptedException{
-        time = Math.abs(time);
-        switch(moveType){
-            case ENCODER_MOVE:
-                this.move(command,goal,time);
-                break;
-            case IMU_TURN:
-                if(goal>=0)
-                    this.turn(command, goal, time);
-                else
-                    this.turn(command, 360-Math.abs(goal), time);
-                break;
-            case ENCODER_STRAFE:
-                this.move(command,goal*Math.sqrt(2),time);
-                break;
-        }
     }
 }

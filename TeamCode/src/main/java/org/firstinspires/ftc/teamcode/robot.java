@@ -20,7 +20,7 @@ public class Robot {
     DcMotor collector = null;
 
     BNO055IMU imu = null;
-    Servo[] latches = null;
+    public Servo[] latches = null;
     Servo[] cubeIntakes = null;
 
     //2018 auto stuff
@@ -30,7 +30,7 @@ public class Robot {
 
     public Commands[] strafe;
 
-
+    public Commands[] armMove;
     //  CRServo backMotor = null;
     /* Define the powers
      *
@@ -185,19 +185,22 @@ public class Robot {
             DcMotor[] left = {this.mainMotors[1], this.mainMotors[3]};
             DcMotor[] x1 = {this.mainMotors[0], this.mainMotors[3]};
             DcMotor[] x2 = {this.mainMotors[1], this.mainMotors[2]};
+            DcMotor[] arm = {this.armMotors[0], this.armMotors[1]};
 
-
-            Commands rightFwd = new Commands(right, 0.5, Commands.Direction.FORWARD);
-            Commands rightRvrs = new Commands(right, 0.5, Commands.Direction.REVERSE);
-            Commands leftFwd = new Commands(left, 0.5, Commands.Direction.FORWARD);
-            Commands strafe1 = new Commands(x1, 0.5, Commands.Direction.REVERSE);
-            Commands strafe2 = new Commands(x2, 0.5, Commands.Direction.FORWARD);
+            Commands rightFwd = new Commands(right, 0.4, Commands.Direction.FORWARD);
+            Commands rightRvrs = new Commands(right, 0.4, Commands.Direction.REVERSE);
+            Commands leftFwd = new Commands(left, 0.4, Commands.Direction.FORWARD);
+            Commands strafe1 = new Commands(x1, 0.4, Commands.Direction.REVERSE);
+            Commands strafe2 = new Commands(x2, 0.4, Commands.Direction.FORWARD);
+            Commands Arm = new Commands(arm,0.5, Commands.Direction.FORWARD);
             Commands[] move_I = {leftFwd, rightFwd};
             Commands[] turn_I = {rightRvrs, leftFwd};
             Commands[] strafe_I = {strafe2, strafe1};
+            Commands[] arm_I = {Arm, };
             this.move = move_I;
             this.turn = turn_I;
             this.strafe = strafe_I;
+            this.armMove = arm_I;
         }
     }
 
