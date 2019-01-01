@@ -41,7 +41,7 @@ public class Robot {
     final double turnPower = 0.8;       //
     final double strafePower = 1;   //
     final double armPower = 0.8;      //
-    final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
+    final double collectPower = 0.69;    //                                                                                                                                                                                                                                                                                                                                                                            `
     final double stretchPower = 1;    //
     ////////////////////////////////////
     /*
@@ -187,11 +187,11 @@ public class Robot {
             DcMotor[] x2 = {this.mainMotors[1], this.mainMotors[2]};
             DcMotor[] arm = {this.armMotors[0], this.armMotors[1]};
 
-            Commands rightFwd = new Commands(right, 0.4, Commands.Direction.FORWARD);
-            Commands rightRvrs = new Commands(right, 0.4, Commands.Direction.REVERSE);
-            Commands leftFwd = new Commands(left, 0.4, Commands.Direction.FORWARD);
-            Commands strafe1 = new Commands(x1, 0.4, Commands.Direction.REVERSE);
-            Commands strafe2 = new Commands(x2, 0.4, Commands.Direction.FORWARD);
+            Commands rightFwd = new Commands(right, 0.3, Commands.Direction.FORWARD);
+            Commands rightRvrs = new Commands(right, 0.3, Commands.Direction.REVERSE);
+            Commands leftFwd = new Commands(left, 0.3, Commands.Direction.FORWARD);
+            Commands strafe1 = new Commands(x1, 0.3, Commands.Direction.REVERSE);
+            Commands strafe2 = new Commands(x2, 0.3, Commands.Direction.FORWARD);
             Commands Arm = new Commands(arm,0.5, Commands.Direction.FORWARD);
             Commands[] move_I = {leftFwd, rightFwd};
             Commands[] turn_I = {rightRvrs, leftFwd};

@@ -11,6 +11,8 @@ public enum AutoDrivetype{
     ENCODER_MOVE,
     IMU_TURN,
     ENCODER_STRAFE,
-    ARM_MOVE
-
+    ARM_MOVE,
+    OPEN_SERVOS,
+    CLOSE_SERVOS,
+    THROW_MARKER
 }

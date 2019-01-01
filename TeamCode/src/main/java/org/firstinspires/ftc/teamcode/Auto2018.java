@@ -18,10 +18,11 @@ public class Auto2018 extends Auto {
     @Override
     public void runOpMode() throws InterruptedException{
         initAuto(rover);
+
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
-        closeServos();
+        execute(AutoDrivetype.CLOSE_SERVO);
         execute(AutoDrivetype.ARM_MOVE,-50,1);
         execute(AutoDrivetype.ARM_MOVE,50,2);
     }

@@ -257,7 +257,10 @@ public abstract class Auto extends LinearOpMode {
     /*
         open&close the latching servos
      */
-    public void openServos(){
+    private void throwMarker(){
+        //opens marker Servo to trow the marker into the depot
+    }
+    private void openServos(){
         for(int i =0;i<this.robot.latches.length;i++){
             if(i%2 == 0) {
                 this.robot.latches[i].setPosition(0);
@@ -266,7 +269,7 @@ public abstract class Auto extends LinearOpMode {
             }
         }
     }
-    public void closeServos(){
+    private void closeServos(){
         for(int i =0;i<this.robot.latches.length;i++){
             if(i%2 == 0) {
                 this.robot.latches[i].setPosition(1);
@@ -281,6 +284,21 @@ public abstract class Auto extends LinearOpMode {
         to memorise functions, more functions could potentially get added later
 
      */
+
+    public void execute(AutoDrivetype action){
+        switch(action){
+            case OPEN_SERVOS:
+                this.openServos();
+                break;
+            case CLOSE_SERVOS:
+                this.closeServos();
+                break;
+            case THROW_MARKER:
+                this.throwMarker();
+                break;
+        }
+
+    }
     public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
