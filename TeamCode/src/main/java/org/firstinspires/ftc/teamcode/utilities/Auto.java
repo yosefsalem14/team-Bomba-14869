@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.utilities;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -10,8 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Robot;
 import java.util.ArrayList;
-/////////////////// COULD BE DONE //////////////
-///////////////////       :>      //////////////
+///////////////////      ^_^      //////////////
 public abstract class Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private Robot robot;
@@ -101,7 +99,7 @@ public abstract class Auto extends LinearOpMode {
         * encoders as it's hard-coded right now and doesn't work properly
         * with multiple encoders,
         * ALSO NODE:
-        * when a command's directionn
+        * when a command's direction
      */
 
 
@@ -272,6 +270,11 @@ public abstract class Auto extends LinearOpMode {
         this will always be called in the start of every autonomous, it will initialize
         and get everything ready.
      */
+
+    /**
+     * initializes the robot and gets everything ready for the autonomous stage
+     * @param robot the robot that the autonomous will work with
+     */
     public void initAuto(Robot robot){
         this.robot = robot;
         robot.init(hardwareMap);
@@ -279,8 +282,13 @@ public abstract class Auto extends LinearOpMode {
         initialize();
     }
 
-    /*
-        uses the vision functions to get the angle of the golden cube
+
+
+    /**
+     * returns the angle of the golden cube, stops running when the timer reaches
+     * the timeout!
+     * @param timeOut timer runs out when it reaches this
+     * @return the angle
      */
     public double getGoldPosition(double timeOut){
         this.act();
@@ -305,7 +313,10 @@ public abstract class Auto extends LinearOpMode {
         return GOLD_POS;
     }
 
-
+    /**
+     * takes an action and performs it
+     * @param action the type of the action
+     */
     public void execute(AutoDrivetype action){
         switch(action){
             case OPEN_SERVOS:
@@ -324,6 +335,13 @@ public abstract class Auto extends LinearOpMode {
 
     }
 
+    /**
+     * takes actions and performs them
+     * @param movement the type of the action
+     * @param goal the stop condition of the action
+     * @param timeOut the action stops when the timer reaches this
+     * @throws InterruptedException
+     */
     public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
