@@ -22,7 +22,7 @@ public class Auto2018 extends Auto {
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
-        execute(AutoDrivetype.CLOSE_SERVO);
+        execute(AutoDrivetype.CLOSE_SERVOS);
         execute(AutoDrivetype.ARM_MOVE,-50,1);
         execute(AutoDrivetype.ARM_MOVE,50,2);
     }

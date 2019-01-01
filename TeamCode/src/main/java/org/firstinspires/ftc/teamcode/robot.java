@@ -20,6 +20,9 @@ public class Robot {
     DcMotor collector = null;
 
     BNO055IMU imu = null;
+
+    public Servo markerServo = null;
+
     public Servo[] latches = null;
     Servo[] cubeIntakes = null;
 
@@ -174,9 +177,17 @@ public class Robot {
                 latches[i].setDirection(Servo.Direction.FORWARD);
             }
 
-                cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
+            cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
             cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
 
+
+            //get the marker Servo
+
+            try{
+                markerServo = hw.get(Servo.class,"markerServo");
+            }catch(Exception e){
+                this.markerServo = null;
+            }
         }
 
 

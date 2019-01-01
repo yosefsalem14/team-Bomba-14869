@@ -88,32 +88,7 @@ public abstract class Auto extends LinearOpMode {
         return new DetectedObject(0,0);
     }
 
-    /*
-        this uses all the functions above and returns the angle of the cube!
-     */
-    public double getGoldPosition(double timeOut){
-        this.act();
-        ArrayList<DetectedObject> detections = this.getDetections(timeOut);
-        int[] counters = new int[3];
-        double GOLD_POS=0;
-        int maxCounter = 0;
-        int index = 0;
-        for(int i = 0;i<detections.size();i++){
-            int pos = detections.get(i).getID().getIntVal();
-            counters[pos-1]++;
-        }
-        for(int i = 0;i<counters.length;i++){
-            if(counters[i]>maxCounter){
-                maxCounter = counters[i];
-                index = i;
-            }
-        }
-        DetectedObject matching = getMatchingId(detections,index);
-        GOLD_POS = matching.getAngle();
-        this.shut();
-        return GOLD_POS;
-    }
-
+    ///////////////////////////////////////////////////////
 
     /*
         ******NOTE******
@@ -244,6 +219,55 @@ public abstract class Auto extends LinearOpMode {
     }
 
 
+    //////////SERVO COMMANDS///////////
+    /*
+        opens the marker servos and throws the marker!
+
+     */
+    private void throwMarker(){
+        //opens marker Servo to trow the marker into the depot
+        if(robot.markerServo!=null) {
+            robot.markerServo.setPosition(1);
+        }else{
+            telemetry.addData("Error","Marker Servo isn't connected");
+        }
+    }
+
+    /*
+        open the latching servos
+     */
+    private void openServos(){
+        for(int i =0;i<this.robot.latches.length;i++){
+            if(i%2 == 0) {
+                this.robot.latches[i].setPosition(0);
+            }else{
+                this.robot.latches[i].setPosition(1);
+            }
+        }
+    }
+
+    /*
+        close the latching servos
+     */
+    private void closeServos(){
+        for(int i =0;i<this.robot.latches.length;i++){
+            if(i%2 == 0) {
+                this.robot.latches[i].setPosition(1);
+            }else{
+                this.robot.latches[i].setPosition(0);
+            }
+        }
+    }
+
+    /*
+        this will be used by the programmer to call the movement type
+        that he/she wants, this is done so the programmer doesn't have
+        to memorise functions, more functions could potentially get added later
+
+     */
+
+
+    /////////////EXECUTE COMMANDS/////////////
     /*
         this will always be called in the start of every autonomous, it will initialize
         and get everything ready.
@@ -254,36 +278,33 @@ public abstract class Auto extends LinearOpMode {
         robot.init2018Auto();
         initialize();
     }
-    /*
-        open&close the latching servos
-     */
-    private void throwMarker(){
-        //opens marker Servo to trow the marker into the depot
-    }
-    private void openServos(){
-        for(int i =0;i<this.robot.latches.length;i++){
-            if(i%2 == 0) {
-                this.robot.latches[i].setPosition(0);
-            }else{
-                this.robot.latches[i].setPosition(1);
-            }
-        }
-    }
-    private void closeServos(){
-        for(int i =0;i<this.robot.latches.length;i++){
-            if(i%2 == 0) {
-                this.robot.latches[i].setPosition(1);
-            }else{
-                this.robot.latches[i].setPosition(0);
-            }
-        }
-    }
-    /*
-        this will be used by the programmer to call the movement type
-        that he/she wants, this is done so the programmer doesn't have
-        to memorise functions, more functions could potentially get added later
 
+    /*
+        uses the vision functions to get the angle of the golden cube
      */
+    public double getGoldPosition(double timeOut){
+        this.act();
+        ArrayList<DetectedObject> detections = this.getDetections(timeOut);
+        int[] counters = new int[3];
+        double GOLD_POS=0;
+        int maxCounter = 0;
+        int index = 0;
+        for(int i = 0;i<detections.size();i++){
+            int pos = detections.get(i).getID().getIntVal();
+            counters[pos-1]++;
+        }
+        for(int i = 0;i<counters.length;i++){
+            if(counters[i]>maxCounter){
+                maxCounter = counters[i];
+                index = i;
+            }
+        }
+        DetectedObject matching = getMatchingId(detections,index);
+        GOLD_POS = matching.getAngle();
+        this.shut();
+        return GOLD_POS;
+    }
+
 
     public void execute(AutoDrivetype action){
         switch(action){
@@ -296,9 +317,13 @@ public abstract class Auto extends LinearOpMode {
             case THROW_MARKER:
                 this.throwMarker();
                 break;
+            default:
+                telemetry.addData("error","unknown command");
+                break;
         }
 
     }
+
     public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
@@ -312,6 +337,10 @@ public abstract class Auto extends LinearOpMode {
                 break;
             case ARM_MOVE:
                 this.move(this.robot.armMove,goal,timeOut);
+                break;
+            default:
+                telemetry.addData("error","unknown command");
+                break;
         }
 
     }
