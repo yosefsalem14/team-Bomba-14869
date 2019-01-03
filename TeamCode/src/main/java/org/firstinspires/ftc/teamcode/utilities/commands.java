@@ -118,7 +118,11 @@ public class Commands  {
         }
     }
 
-
+    public void updatePower(double power,double limit){
+        for(DcMotor motor : this.motors){
+            motor.setPower(Range.clip(power*this.direction,-limit,limit));
+        }
+    }
 
     /*
         goes through all the DcMotors and checks if one reached

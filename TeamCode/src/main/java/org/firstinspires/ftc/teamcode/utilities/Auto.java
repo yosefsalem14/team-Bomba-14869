@@ -149,6 +149,45 @@ public abstract class Auto extends LinearOpMode {
             telemetry.update();
         } }
 
+    private void turn(Commands[] comms, double Power, double angle,double timeout) throws InterruptedException{
+        if (opModeIsActive()) {
+            reset();
+            //rest run time
+            runtime.reset();
+
+
+            //wait until the moto1rs reach their goal
+            //or until the time runs out
+            boolean canRun;
+            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>0.5;
+            while (opModeIsActive() &&canRun&&
+                    runtime.seconds() < timeout) {
+                angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                angle = angle%360;
+                angles.firstAngle = angles.firstAngle%360;
+
+                double dist = (angle)-angles.firstAngle;
+
+                double D = Math.abs(angle) - Math.abs(angles.firstAngle);
+                if(Math.abs(dist)>180) {
+                    dist =  -dist;
+                }
+                double power = motorTurn.getPower(-dist);
+                for(Commands command : comms){command.updatePower(power,Power);}
+                //work until all the motors stop or until the time runs out
+                telemetry.addData("angle",angles.firstAngle);
+                telemetry.addData("Target angle",angle);
+                telemetry.addData("dist", dist);
+                telemetry.update();
+                canRun = Math.abs(D)>0.5;
+            }
+            for(Commands command : comms){
+                command.stop();
+            }
+            Thread.sleep(100);
+            telemetry.addData("status","finished");
+            telemetry.update();
+        } }
 
 
     /*
@@ -198,6 +237,45 @@ public abstract class Auto extends LinearOpMode {
             }
         }
 
+    private void move(Commands[] comms, double Power, double distance,double timeout)throws InterruptedException {
+        if (opModeIsActive()) {
+            reset();
+            for(Commands command : comms) {
+                command.init(distance);
+            }
+
+            //rest run time
+            runtime.reset();
+
+
+
+            //Cait until the motors reach their goal
+            //or until the time runs out
+            boolean canRun = true;
+            for(Commands command:comms) {
+                while (opModeIsActive() && canRun&&
+                        runtime.seconds() < timeout) {
+                    double dist = command.getDist();
+                    double power = motorDist.getPower(dist);
+                    for(Commands C : comms) {
+                        C.updatePower(power,Power);
+                    }
+                    //work until all the motors stop or until the time runs out
+                    telemetry.addData("dist", dist);
+                    telemetry.update();
+                    canRun = command.canMove();
+                }
+            }
+
+
+            for(Commands command : comms){
+                command.stop();
+            }
+            Thread.sleep(100);
+            telemetry.addData("status","finished");
+            telemetry.update();
+        }
+    }
 
     /*
         this is used in the move() function to check
@@ -355,6 +433,36 @@ public abstract class Auto extends LinearOpMode {
                 break;
             case ARM_MOVE:
                 this.move(this.robot.armMove,goal,timeOut);
+                break;
+            default:
+                telemetry.addData("error","unknown command");
+                break;
+        }
+
+    }
+
+    /**
+     *
+     * takes actions and performs them
+     * @param movement the type of the action
+     * @param power limit the motor power to this
+     * @param goal the stop condition of the action
+     * @param timeOut the action stops when the timer reaches this
+     * @throws InterruptedException
+     */
+    public void execute(AutoDrivetype movement, double power, double goal, double timeOut)throws InterruptedException{
+        switch(movement){
+            case ENCODER_MOVE:
+                this.move(this.robot.move, Math.abs(power), goal, timeOut);
+                break;
+            case IMU_TURN:
+                this.turn(this.robot.turn, Math.abs(power), goal, timeOut);
+                break;
+            case ENCODER_STRAFE:
+                this.move(this.robot.strafe, Math.abs(power), goal, timeOut);
+                break;
+            case ARM_MOVE:
+                this.move(this.robot.armMove, Math.abs(power), goal, timeOut);
                 break;
             default:
                 telemetry.addData("error","unknown command");

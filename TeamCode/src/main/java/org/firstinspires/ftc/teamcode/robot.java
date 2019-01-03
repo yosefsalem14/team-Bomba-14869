@@ -40,11 +40,11 @@ public class Robot {
      */
     //EDIT THESE VALUES TO CHANGE POWERS//
     ////////////////////////////////////
-    final double movePower = 0.7;     //
-    final double turnPower = 0.8;       //
-    final double strafePower = 1;   //
+    final double movePower = 0.8;     //
+    final double turnPower = 0.7;       //
+    final double strafePower = 0.7;   //
     final double armPower = 0.8;      //
-    final double collectPower = 0.69;    //                                                                                                                                                                                                                                                                                                                                                                            `
+    final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
     final double stretchPower = 1;    //
     ////////////////////////////////////
     /*
@@ -168,15 +168,21 @@ public class Robot {
             try{
                 cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
                 cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
+                for(int i =0;i<latches.length;i++){
+                    latches[i].setDirection(Servo.Direction.FORWARD);
+                }
+                for(int i =0;i<latches.length;i++){
+                    if(i%2 == 0) {
+                        latches[i].setPosition(0.7);
+                    }else{
+                        latches[i].setPosition(0.3);
+                    }
+                }
             }catch(Exception e){
                 for(int i =0;i<cubeIntakes.length;i++){
                     cubeIntakes[i] = null;
                 }
             }
-            for(int i =0;i<latches.length;i++){
-                latches[i].setDirection(Servo.Direction.FORWARD);
-            }
-
             cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
             cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
 
@@ -203,7 +209,7 @@ public class Robot {
             Commands leftFwd = new Commands(left, 0.3, Commands.Direction.FORWARD);
             Commands strafe1 = new Commands(x1, 0.3, Commands.Direction.REVERSE);
             Commands strafe2 = new Commands(x2, 0.3, Commands.Direction.FORWARD);
-            Commands Arm = new Commands(arm,0.5, Commands.Direction.FORWARD);
+            Commands Arm = new Commands(arm,0.8, Commands.Direction.FORWARD);
             Commands[] move_I = {leftFwd, rightFwd};
             Commands[] turn_I = {rightRvrs, leftFwd};
             Commands[] strafe_I = {strafe2, strafe1};
