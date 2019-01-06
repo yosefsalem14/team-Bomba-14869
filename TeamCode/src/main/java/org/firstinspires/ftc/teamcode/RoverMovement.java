@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
+
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import android.util.Log;
 /*
     ///////main TeleOP class/////
@@ -14,6 +17,8 @@ import android.util.Log;
 
 public class RoverMovement extends LinearOpMode {
     Robot rover = new Robot();
+
+
 
     @Override
     public void runOpMode(){//throws InterruptedException {
@@ -97,22 +102,28 @@ public class RoverMovement extends LinearOpMode {
              *
               */
             //calculate the specific motor power
-                double leftBack =   Range.clip(move - turn + strafe,
-                        -1,1);
-                double leftFront =  Range.clip(move - turn - strafe,
-                        -1,1);
-                double rightBack =  Range.clip(move + turn - strafe,
-                        -1,1);
-                double rightFront = Range.clip(move + turn + strafe,
-                        -1,1);
-
+                double leftBack =   move - turn + strafe;
+                double leftFront =  move - turn - strafe;
+                double rightBack =  move + turn - strafe;
+                double rightFront = move + turn + strafe;
+            double[] powers = {leftBack, leftFront, rightBack, rightFront,};
+            Arrays.sort(powers);
+            for(int i =0;i<powers.length;i++){
+                powers[i]/=powers[3];
+            }
 
             //do the movements:
-            rover.mainMotors[0].setPower(leftBack);
-            rover.mainMotors[1].setPower(rightBack);
-            rover.mainMotors[2].setPower(leftFront);
-            rover.mainMotors[3].setPower(rightFront);
-
+            if(armMove==0) {
+                rover.mainMotors[0].setPower(leftBack);
+                rover.mainMotors[1].setPower(rightBack);
+                rover.mainMotors[2].setPower(leftFront);
+                rover.mainMotors[3].setPower(rightFront);
+            }else{
+                rover.mainMotors[0].setPower(0);
+                rover.mainMotors[1].setPower(0);
+                rover.mainMotors[2].setPower(0);
+                rover.mainMotors[3].setPower(0);
+            }
 
 
 
@@ -120,9 +131,10 @@ public class RoverMovement extends LinearOpMode {
               PICKING UP MECHANISM MOVEMENT
              */
             //arm  movement
-            for (int i = 0; i < rover.armMotors.length; i++) {
+
+                for (int i = 0; i < rover.armMotors.length; i++) {
                     rover.armMotors[i].setPower(armMove);
-            }
+                }
 
             //collector movement
             rover.collector.setPower(-collect *

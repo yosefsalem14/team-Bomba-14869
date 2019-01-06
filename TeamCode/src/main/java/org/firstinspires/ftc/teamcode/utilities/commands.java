@@ -102,6 +102,7 @@ public class Commands  {
      */
     public void stop(){
         for (DcMotor motor :this.motors) {
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motor.setPower(0);
         }
     }
@@ -129,7 +130,7 @@ public class Commands  {
         it's goal, if it 1`did it stops all the command
      */
     public boolean canMove() {
-        return (Math.abs(getDist())>=10);
+        return (Math.abs(getDist())>=100);
     }
 
 

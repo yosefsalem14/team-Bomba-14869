@@ -50,8 +50,8 @@ public abstract class Auto extends LinearOpMode {
         objectDetector.init();
         getIMU();
         //TODO: Tune the PIDs!
-        motorDist = new PID(0.001340000,0.0,0.00006899);
-        motorTurn = new PID(0.05549998542908,0.0,0.000598858);
+        motorDist = new PID(0.0004995,0.0,0.008877);
+        motorTurn = new PID(0.0158878789,0.0,0.00777);
         //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
     }
 
@@ -119,7 +119,7 @@ public abstract class Auto extends LinearOpMode {
             //wait until the moto1rs reach their goal
             //or until the time runs out
             boolean canRun;
-            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>0.5;
+            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>=10;
             while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) {
                     angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -139,7 +139,7 @@ public abstract class Auto extends LinearOpMode {
                     telemetry.addData("Target angle",angle);
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = Math.abs(D)>0.5;
+                    canRun = Math.abs(D)>=10;
              }
              for(Commands command : comms){
                 command.stop();
@@ -159,7 +159,7 @@ public abstract class Auto extends LinearOpMode {
             //wait until the moto1rs reach their goal
             //or until the time runs out
             boolean canRun;
-            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>0.5;
+            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>=10;
             while (opModeIsActive() &&canRun&&
                     runtime.seconds() < timeout) {
                 angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -179,12 +179,11 @@ public abstract class Auto extends LinearOpMode {
                 telemetry.addData("Target angle",angle);
                 telemetry.addData("dist", dist);
                 telemetry.update();
-                canRun = Math.abs(D)>0.5;
+                canRun = Math.abs(D)>=10;
             }
             for(Commands command : comms){
                 command.stop();
             }
-            Thread.sleep(100);
             telemetry.addData("status","finished");
             telemetry.update();
         } }
@@ -231,9 +230,6 @@ public abstract class Auto extends LinearOpMode {
             for(Commands command : comms){
                 command.stop();
             }
-            Thread.sleep(100);
-            telemetry.addData("status","finished");
-            telemetry.update();
             }
         }
 
@@ -453,7 +449,7 @@ public abstract class Auto extends LinearOpMode {
     public void execute(AutoDrivetype movement, double power, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
-                this.move(this.robot.move, Math.abs(power), goal, timeOut);
+                    this.move(this.robot.move, Math.abs(power), goal, timeOut);
                 break;
             case IMU_TURN:
                 this.turn(this.robot.turn, Math.abs(power), goal, timeOut);
