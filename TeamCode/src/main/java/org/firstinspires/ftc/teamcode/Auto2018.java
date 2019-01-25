@@ -20,7 +20,7 @@ public class Auto2018 extends Auto {
         telemetry.update();
         waitForStart();
         double angle = getGoldPosition(10);
-        execute(AutoDrivetype.IMU_TURN,angle2,2);
+        execute(AutoDrivetype.IMU_TURN,angleg,2);
         execute(AutoDrivetype.ARM_MOVE,-50,0.5);
         execute(AutoDrivetype.ENCODER_MOVE,20,2);
         execute(AutoDrivetype.ENCODER_MOVE,-10,2);
