@@ -139,7 +139,7 @@ public abstract class Auto extends LinearOpMode {
                     telemetry.addData("Target angle",angle);
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = Math.abs(D)>=10;
+                    canRun = (Math.abs(D)>=10)||(power>0.1);
              }
              for(Commands command : comms){
                 command.stop();
@@ -179,7 +179,7 @@ public abstract class Auto extends LinearOpMode {
                 telemetry.addData("Target angle",angle);
                 telemetry.addData("dist", dist);
                 telemetry.update();
-                canRun = Math.abs(D)>=10;
+                canRun = (Math.abs(D)>=10)||(power>0.1);
             }
             for(Commands command : comms){
                 command.stop();
@@ -222,7 +222,7 @@ public abstract class Auto extends LinearOpMode {
                             //work until all the motors stop or until the time runs out
                             telemetry.addData("dist", dist);
                             telemetry.update();
-                            canRun = command.canMove();
+                            canRun = command.canMove()||(power>0.1);
                         }
                     }
 
@@ -259,7 +259,7 @@ public abstract class Auto extends LinearOpMode {
                     //work until all the motors stop or until the time runs out
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = command.canMove();
+                    canRun = command.canMove()||(power>0.1);
                 }
             }
 
@@ -298,10 +298,12 @@ public abstract class Auto extends LinearOpMode {
      */
     private void throwMarker(){
         //opens marker Servo to trow the marker into the depot
-        if(robot.markerServo!=null) {
-            robot.markerServo.setPosition(1);
-        }else{
-            telemetry.addData("Error","Marker Servo isn't connected");
+        for(int i = 0; i < robot.supportServos.length;i++) {
+            if (robot.supportServos[i] != null) {
+                robot.supportServos[i].setPosition(0);
+            } else {
+                telemetry.addData("Error", "Marker Servo isn't connected");
+            }
         }
     }
 
