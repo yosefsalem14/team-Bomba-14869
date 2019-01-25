@@ -87,7 +87,7 @@ public class vision {
                             gold.setID(ObjectPositions.RIGHT);//the positions are only for identifications
                             //if you only see 2 and the golden is not in view,
                             // turn to teh silver piece that's on the far left
-                            gold.setAngle(sign(silver1.getAngle())*25.0);
+                            gold.setAngle(-sign(silver1.getAngle())*25.0);
                         } else if (goldMineralX < silverMineral1X) {
                             gold.setID(ObjectPositions.CEMTER);
                         }else {
@@ -145,7 +145,7 @@ public class vision {
     private void initTfod() {
         int tfodMonitorViewId = this.hw.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", this.hw.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);//TODO tfodMonitorViewId;
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();//TODO tfodMonitorViewId;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }

@@ -130,7 +130,7 @@ public class Commands  {
         it's goal, if it 1`did it stops all the command
      */
     public boolean canMove() {
-        return (Math.abs(getDist())>=100);
+        return (Math.abs(getDist())>=50);
     }
 
 

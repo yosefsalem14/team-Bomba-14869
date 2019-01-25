@@ -32,7 +32,9 @@ public class Robot {
 
     public Commands[] turn;
 
-    public Commands[] strafe;
+    public Commands[] intakeMove;
+
+    public Commands[] latchMove;
 
     public Commands[] armMove;
     //  CRServo backMotor = null;
@@ -41,7 +43,7 @@ public class Robot {
      */
     //EDIT THESE VALUES TO CHANGE POWERS//
     ////////////////////////////////////
-    final double movePower = 0.9;     //
+    final double movePower = 1;     //
     final double turnPower = 1;     //
     final double armPower = 1;      //
     final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
@@ -180,25 +182,25 @@ public class Robot {
         public void init2018Auto() {
             DcMotor[] right = {this.mainMotors[0], this.mainMotors[2]};
             DcMotor[] left = {this.mainMotors[1], this.mainMotors[3]};
-            DcMotor[] x1 = {this.mainMotors[0], this.mainMotors[3]};
-            DcMotor[] x2 = {this.mainMotors[1], this.mainMotors[2]};
             DcMotor[] arm = {this.armMotors[0], this.armMotors[1]};
-
+            DcMotor[] latch = {latchMotor,};
+            DcMotor[] intake = {collector,};
             Commands rightFwd = new Commands(right, 0.7, Commands.Direction.FORWARD);
             Commands rightRvrs = new Commands(right, 0.7, Commands.Direction.REVERSE);
-            Commands leftFwd = new Commands(left, 0.7, Commands.Direction.REVERSE);
-            Commands strafe1 = new Commands(x1, 0.7, Commands.Direction.REVERSE);
-            Commands strafe2 = new Commands(x2, 0.7, Commands.Direction.FORWARD);
-            Commands Arm = new Commands(arm,0.8, Commands.Direction.FORWARD);
+            Commands leftFwd = new Commands(left, 0.7, Commands.Direction.FORWARD);
+            Commands Arm = new Commands(arm,1, Commands.Direction.FORWARD);
+            Commands Latch = new Commands(latch,1,Commands.Direction.FORWARD);
+            Commands Intake = new Commands(intake,1,Commands.Direction.FORWARD);
             Commands[] move_I = {leftFwd, rightFwd};
             Commands[] turn_I = {rightRvrs, leftFwd};
-            Commands[] strafe_I = {strafe2, strafe1};
             Commands[] arm_I = {Arm, };
+            Commands[] Latch_I = {Latch, };
+            Commands[] Intake_I = {Intake,};
             this.move = move_I;
-            
             this.turn = turn_I;
-            this.strafe = strafe_I;
             this.armMove = arm_I;
+            this.latchMove = Latch_I;
+            this.intakeMove = Intake_I;
         }
     }
 

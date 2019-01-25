@@ -62,7 +62,7 @@ public class RoverMovement extends LinearOpMode {
 
                 //calculate the turn & strafe & move factor
 
-                    this.move =     (Math.pow(gamepad1.left_stick_y,3))*rover.movePower;
+                    this.move =     (Math.pow(gamepad1.left_stick_y,5))*rover.movePower;
                     this.turn =     (rightTrigger-leftTrigger)*rover.turnPower;
                     double armY = -gamepad2.left_stick_y;
                 //calculate the arm & stetcher & collector move factor

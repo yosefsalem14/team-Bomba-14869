@@ -66,10 +66,12 @@ public abstract class Auto extends LinearOpMode {
         //it goes to the last read when it fails
         int i = 0;
         runtime.reset();
-        while(i<this.ACCURACY&&opModeIsActive()&&runtime.seconds()<=timeOut){
+        while(i<this.ACCURACY&&opModeIsActive()&&runtime.seconds()<=timeOut) {
             DetectedObject nextPos = objectDetector.getPos();
-            objects.add(nextPos);
-            i++;
+            if (nextPos.getID() != ObjectPositions.UNKNOWN) {
+                objects.add(nextPos);
+                i++;
+            }
         }
         return objects;
     }
@@ -139,7 +141,7 @@ public abstract class Auto extends LinearOpMode {
                     telemetry.addData("Target angle",angle);
                     telemetry.addData("dist", dist);
                     telemetry.update();
-                    canRun = (Math.abs(D)>=10)||(power>0.1);
+                    canRun = (Math.abs(dist)>0);
              }
              for(Commands command : comms){
                 command.stop();
@@ -179,7 +181,7 @@ public abstract class Auto extends LinearOpMode {
                 telemetry.addData("Target angle",angle);
                 telemetry.addData("dist", dist);
                 telemetry.update();
-                canRun = (Math.abs(D)>=10)||(power>0.1);
+                canRun = (Math.abs(D)>=0)||(power>0.1);
             }
             for(Commands command : comms){
                 command.stop();
@@ -370,12 +372,14 @@ public abstract class Auto extends LinearOpMode {
         this.act();
         ArrayList<DetectedObject> detections = this.getDetections(timeOut);
         int[] counters = new int[3];
-        double GOLD_POS=0;
+        double GOLD_POS;
         int maxCounter = 0;
         int index = 0;
         for(int i = 0;i<detections.size();i++){
             int pos = detections.get(i).getID().getIntVal();
-            counters[pos-1]++;
+            if(pos!=-1) {
+                counters[pos - 1]++;
+            }
         }
         for(int i = 0;i<counters.length;i++){
             if(counters[i]>maxCounter){
@@ -421,16 +425,19 @@ public abstract class Auto extends LinearOpMode {
     public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
-                this.move(this.robot.move,goal,timeOut);
+                this.move(this.robot.move,-goal,timeOut);
                 break;
             case IMU_TURN:
-                this.turn(this.robot.turn,goal,timeOut);
-                break;
-            case ENCODER_STRAFE:
-                this.move(this.robot.strafe,goal,timeOut);
+                this.turn(this.robot.turn,-goal,timeOut);
                 break;
             case ARM_MOVE:
                 this.move(this.robot.armMove,goal,timeOut);
+                break;
+            case LATCH_MOVE:
+                this.move(this.robot.latchMove,goal,timeOut);
+                break;
+            case INTAKE_MOVE:
+                this.move(this.robot.intakeMove,goal,timeOut);
                 break;
             default:
                 telemetry.addData("error","unknown command");
@@ -451,13 +458,10 @@ public abstract class Auto extends LinearOpMode {
     public void execute(AutoDrivetype movement, double power, double goal, double timeOut)throws InterruptedException{
         switch(movement){
             case ENCODER_MOVE:
-                    this.move(this.robot.move, Math.abs(power), goal, timeOut);
+                    this.move(this.robot.move, -Math.abs(power), goal, timeOut);
                 break;
             case IMU_TURN:
                 this.turn(this.robot.turn, Math.abs(power), goal, timeOut);
-                break;
-            case ENCODER_STRAFE:
-                this.move(this.robot.strafe, Math.abs(power), goal, timeOut);
                 break;
             case ARM_MOVE:
                 this.move(this.robot.armMove, Math.abs(power), goal, timeOut);
