@@ -162,7 +162,7 @@ public class Commands  {
         it's goal, if it 1`did it stops all the command
      */
     public boolean canMove() {
-        return (Math.abs(getDist())>=50)&&(runTime.seconds()<timeGoal);
+        return (Math.abs(getDist())>=50);
     }
 
 

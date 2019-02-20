@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.utilities;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 
@@ -12,20 +12,18 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.utilities.Commands;
 
 public class Robot {
-    DcMotor[] mainMotors = null;
+    public DcMotor[] mainMotors = null;
 
-    DcMotor[] armMotors = null;
+    public  DcMotor[] armMotors = null;
 
-    DcMotor latchMotor = null;
+    public DcMotor latchMotor = null;
 
-    DcMotor collector = null;
-
-    BNO055IMU imu = null;
+    public DcMotor collector = null;
 
     public Servo[] supportServos;
 
     public Servo[] latches = null;
-    Servo[] cubeIntakes = null;
+    public Servo[] cubeIntakes = null;
 
     //2018 auto stuff
     public Commands[] move;
@@ -43,11 +41,11 @@ public class Robot {
      */
     //EDIT THESE VALUES TO CHANGE POWERS//
     ////////////////////////////////////
-    final double movePower = 1;     //
-    final double turnPower = 1;     //
-    final double armPower = 1;      //
-    final double collectPower = 1;    //                                                                                                                                                                                                                                                                                                                                                                            `
-    final double latchPower = 1;    //
+    public final double movePower = 1;     //
+    public final double turnPower = 1;     //
+    public final double armPower = 1;      //
+    public final double collectPower = 0.7;    //                                                                                                                                                                                                                                                                                                                                                                            `
+    public final double latchPower = 1;    //
     ////////////////////////////////////
     /*
      * get the hardware map
@@ -90,9 +88,9 @@ public class Robot {
     //            //set the direction
                 for(int i =0;i<mainMotors.length;i++){
                     if((i & 0x1)==0)
-                        mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
-                    else
                         mainMotors[i].setDirection(DcMotor.Direction.REVERSE);
+                    else
+                        mainMotors[i].setDirection(DcMotor.Direction.FORWARD);
                 }
             } catch (Exception notF) {
                 for (int i = 0; i < mainMotors.length; i++) {
@@ -111,8 +109,8 @@ public class Robot {
                     armMotors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     armMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 }
-                armMotors[0].setDirection(DcMotor.Direction.FORWARD);
-                armMotors[1].setDirection(DcMotor.Direction.REVERSE);
+                armMotors[0].setDirection(DcMotor.Direction.REVERSE);
+                armMotors[1].setDirection(DcMotor.Direction.FORWARD);
             } catch (Exception notF) {
                 for (int i = 0; i < armMotors.length; i++) {
                     armMotors[i] = null;
@@ -185,9 +183,9 @@ public class Robot {
             DcMotor[] arm = {this.armMotors[0], this.armMotors[1]};
             DcMotor[] latch = {latchMotor,};
             DcMotor[] intake = {collector,};
-            Commands rightFwd = new Commands(right, 0.7, Commands.Direction.FORWARD);
-            Commands rightRvrs = new Commands(right, 0.7, Commands.Direction.REVERSE);
-            Commands leftFwd = new Commands(left, 0.7, Commands.Direction.FORWARD);
+            Commands rightFwd = new Commands(right, 0.7, Commands.Direction.REVERSE);
+            Commands rightRvrs = new Commands(right, 0.7, Commands.Direction.FORWARD);
+            Commands leftFwd = new Commands(left, 0.7, Commands.Direction.REVERSE);
             Commands Arm = new Commands(arm,1, Commands.Direction.FORWARD);
             Commands Latch = new Commands(latch,1,Commands.Direction.FORWARD);
             Commands Intake = new Commands(intake,1,Commands.Direction.FORWARD);

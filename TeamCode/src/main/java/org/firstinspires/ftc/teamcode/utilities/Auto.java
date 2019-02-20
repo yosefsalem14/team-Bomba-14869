@@ -3,16 +3,13 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.vuforia.CameraDevice;
-import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.internal.vuforia.VuforiaTrackableContainer;
-import org.firstinspires.ftc.teamcode.Robot;
+
 import java.util.ArrayList;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 
 ///////////////////      ^_^      //////////////
 public abstract class Auto extends LinearOpMode {
@@ -26,6 +23,7 @@ public abstract class Auto extends LinearOpMode {
     private BNO055IMU imu;
     private vision objectDetector;
     private int currentState = 0;
+
     private int currentState1 = 0;
     final int ACCURACY = 10;
     /* get the IMU sensor
@@ -103,9 +101,9 @@ public abstract class Auto extends LinearOpMode {
         this.act();
         ArrayList<Integer> detections = this.getDetections(timeOut);
         double[] angles = new double[3];
-//        if(detections.size() == 0){
-//            return -1;
-//        }
+        if(detections.size() == 0){
+            return -1;
+        }
         for(int pos : detections){
             angles[pos+1]++;
         }
@@ -244,9 +242,9 @@ public abstract class Auto extends LinearOpMode {
             for(Commands command : comms) {
                 command.init(distance);
             }
+            runtime.reset();
             do{
             //rest run time
-            runtime.reset();
             //Wait until the motors reach their goal
             //or until the time runs out
             dist = comms[0].getDist();
@@ -257,7 +255,7 @@ public abstract class Auto extends LinearOpMode {
             //work until all the motors stop or until the time runs out
             telemetry.addData("dist", dist);
             telemetry.update();
-            canRun = comms[0].canMove()&&(power>0.1);
+            canRun = comms[0].canMove()&&(Math.abs(power)>0.1);
             }
             while (opModeIsActive() && canRun&&
                    runtime.seconds() < timeout);
@@ -415,9 +413,6 @@ public abstract class Auto extends LinearOpMode {
     public void initControlled(Robot robot){
         this.robot = robot;
         robot.init(hardwareMap);
-        {
-
-        }
         robot.init2018Auto();
         initializeWithoutIMU();
     }
@@ -460,7 +455,7 @@ public abstract class Auto extends LinearOpMode {
                 break;
             case IMU_TURN:
                 this.turn(this.robot.turn,
-                        -goal, timeOut, turnPID);
+                        goal, timeOut, turnPID);
                 break;
             case ARM_MOVE:
                 this.move(this.robot.armMove,
@@ -523,22 +518,21 @@ public abstract class Auto extends LinearOpMode {
 
     }
     public void goToPos(int state,AutoDrivetype type,double pos){
-
         switch (type) {
             case ARMS:
                 if(currentState!=state) {
                     currentState=state;
                     controlledMove(this.robot.armMove, 1,
-                            pos * currentState, 2, armPID);
+                            pos * currentState, 20, armPID);
                 }
                 break;
-                case LATCH:
-                    if(currentState1!=state) {
-                        currentState1=state;
-                        controlledMove(this.robot.latchMove, 1,
-                                -pos * currentState1, 2, latchPID);
-                    }
-                    break;
+            case LATCH:
+                if(currentState1!=state) {
+                currentState1=state;
+                controlledMove(this.robot.latchMove, 1,
+                   -pos * currentState1, 20, latchPID);
+                }
+                break;
         }
     }
 }

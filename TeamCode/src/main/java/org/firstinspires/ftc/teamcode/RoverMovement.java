@@ -1,15 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.utilities.Auto;
 import org.firstinspires.ftc.teamcode.utilities.AutoDrivetype;
 import org.firstinspires.ftc.teamcode.utilities.Controller;
-
+import org.firstinspires.ftc.teamcode.utilities.Robot;
 import java.util.Arrays;
-import android.util.Log;
 /*
     ///////main TeleOP class/////
     this will be used for the main robot
@@ -65,7 +63,7 @@ public class RoverMovement extends Auto {
                     com2DpadLeft = toInt(gamepad2.dpad_left);
                     com2DpadUp = toInt(gamepad2.dpad_up);
                     com2RightTrigger = Math.ceil(gamepad2.right_trigger);
-                    armMove = gamepad2.left_stick_y* rover.armPower;
+                    armMove = -gamepad2.left_stick_y* rover.armPower;
                     XPressed = gamepad2.x;
                     YPressed = gamepad2.y;
                     APressed = gamepad2.a;
@@ -76,8 +74,8 @@ public class RoverMovement extends Auto {
 
                 //calculate the turn & strafe & move factor
 
-                this.move =     gamepad1.left_stick_y*rover.movePower;
-                this.turn =     (rightTrigger-leftTrigger)*rover.turnPower;
+                this.move =     -gamepad1.left_stick_y*rover.movePower;
+                this.turn =     -(rightTrigger-leftTrigger)*rover.turnPower;
 
                 //open and close the latches
                 boolean[] latches=servoSwitch(XPressed,latchOpen,onceLatches);
@@ -104,6 +102,7 @@ public class RoverMovement extends Auto {
             //do the movements:
                 for (int i = 0; i < rover.mainMotors.length; i++) {
                         double currentPower = ramper[i].rampUp(powers[i], turn == 0);
+                        if(rover.mainMotors[i]!=null)
                         rover.mainMotors[i].setPower(currentPower);
                 }
 
@@ -115,55 +114,44 @@ public class RoverMovement extends Auto {
             goToPos((int)-com2DpadUp, AutoDrivetype.ARMS,22);
             goToPos((int)(com2DpadLeft - com2DpadRight), AutoDrivetype.LATCH,22);
             for (int i = 0; i < rover.armMotors.length; i++) {
+                    if(rover.armMotors[i]!=null)
                     rover.armMotors[i].setPower(armRamper.rampUp(armMove,false));
             }
             //collector movement
             collect = com2RightBumper - com2LeftBumper + com2RightTrigger*rover.collectPower;
+            if(rover.collector!=null)
             rover.collector.setPower(-collect *
                     rover.collectPower);
-            for(int i =0;i<rover.latches.length;i++) {
-                if (latchOpen) {
-                    if(i%2 == 0) {
-                        rover.latches[i].setPosition(0);
-                    }else{
-                        rover.latches[i].setPosition(1);
-
-                    }
-                } else {
-                    if(i%2 == 0) {
-                        rover.latches[i].setPosition(1);
-                    }else{
-                        rover.latches[i].setPosition(0);
+            if(rover.latches[0]!=null&&rover.latches!=null) {
+                for (int i = 0; i < rover.latches.length; i++) {
+                    if (latchOpen) {
+                        rover.latches[0].setPosition(0);
+                        rover.latches[1].setPosition(1);
+                    } else {
+                        rover.latches[0].setPosition(1);
+                        rover.latches[1].setPosition(0);
                     }
                 }
             }
-            for(int i =0;i<rover.cubeIntakes.length;i++) {
-                if (cubeIntakesOpen) {
-                    if(i%2==0){
-                        rover.cubeIntakes[i].setPosition((90.0/180.0));
-                    }else
-                        rover.cubeIntakes[i].setPosition((0.0/180.0));
-                } else {
-                    if(i%2==0){
-                        rover.cubeIntakes[i].setPosition((0.0/180.0));
-                    }else
-                        rover.cubeIntakes[i].setPosition((90.0/180.0));
+            if(rover.cubeIntakes[0]!=null&&rover.cubeIntakes!=null) {
+                for (int i = 0; i < rover.cubeIntakes.length; i++) {
+                    if (cubeIntakesOpen) {
+                        rover.cubeIntakes[0].setPosition((90.0 / 180.0));
+                        rover.cubeIntakes[1].setPosition((0.0 / 180.0));
+                    } else {
+                        rover.cubeIntakes[0].setPosition((0.0 / 180.0));
+                        rover.cubeIntakes[1].setPosition((90.0 / 180.0));
 
+                    }
                 }
             }
-
-            for(int i =0;i<rover.supportServos.length;i++) {
-                if (support) {
-                    if(i%2==0){
-                        rover.supportServos[i].setPosition((90.0/180.0));
-                    }else
-                        rover.supportServos[i].setPosition((90.0/180.0));
-
-                } else {
-                    if(i%2==0){
-                        rover.supportServos[i].setPosition((0/180.0));
-                    }else
-                        rover.supportServos[i].setPosition((0/180.0));
+            if(rover.supportServos[0]!=null&&rover.supportServos!=null) {
+                for (int i = 0; i < rover.supportServos.length; i++) {
+                    if (support) {
+                        rover.supportServos[i].setPosition((85.0 / 180.0));
+                    } else {
+                        rover.supportServos[i].setPosition((5 / 180.0));
+                    }
                 }
             }
             //latchMotor move
