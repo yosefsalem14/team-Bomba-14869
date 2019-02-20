@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.utilities;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 /////////////////// COULD BE DONE //////////////
 ///////////////////       :>      //////////////
@@ -19,12 +20,12 @@ public class Commands  {
     static final double     MAGIC_NUMBER         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/
             (WHEEL_DIAMETER_INCHES * 3.1415);
 
-
+    private boolean busy;
     private DcMotor[] motors;
     private double power;
     private int direction = 0;
-
-
+    private ElapsedTime runTime;
+    private double timeGoal;
 
     /*
         Commands constructor, takes an array of DcMotors, their desired power
@@ -33,10 +34,16 @@ public class Commands  {
     public Commands(){
         this.power = 0;
         this.direction = 0;
+        this.busy = false;
+        this.runTime = new ElapsedTime();
+        this.timeGoal = 0;
     }
     public Commands(DcMotor[] motors,double power,Direction D){
         this.motors = motors;
         this.power = power;
+        this.busy = false;
+        this.runTime = new ElapsedTime();
+        this.timeGoal = 0;
         switch(D){
             case FORWARD:
                 this.direction = 1;
@@ -59,18 +66,34 @@ public class Commands  {
         like a RUN_TO_POSITION config, it in-fact uses RUN_WITHOUT_ENCODER
         setTargetDist() is used cause am lazy!
      */
-    public void init(double dst){
-        for(int i =0;i<this.motors.length;i++){
-            //reset the encoder, change the behaviour, calculate position
-            //then set the target position and change the mode
-            motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            int pos = motors[i].getCurrentPosition() + (int) ((dst) * MAGIC_NUMBER);
-            motors[i].setTargetPosition(pos);
-            motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void init(double dst,double timeGoal){
+        if(!busy) {
+            for (int i = 0; i < this.motors.length; i++) {
+                //reset the encoder, change the behaviour, calculate position
+                //then set the target position and change the mode
+                motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                int pos = motors[i].getCurrentPosition() + (int) ((dst) * MAGIC_NUMBER);
+                motors[i].setTargetPosition(pos);
+                motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+            runTime.reset();
+            this.timeGoal = timeGoal;
+            busy = true;
         }
     }
-
+    public void init(double dst){
+            timeGoal = 500;
+            for (int i = 0; i < this.motors.length; i++) {
+                //reset the encoder, change the behaviour, calculate position
+                //then set the target position and change the mode
+                motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                int pos = motors[i].getCurrentPosition() + (int) ((dst) * MAGIC_NUMBER);
+                motors[i].setTargetPosition(pos);
+                motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            }
+    }
 
 
 
@@ -105,9 +128,18 @@ public class Commands  {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motor.setPower(0);
         }
+        busy = false;
+        timeGoal = 0;
     }
-
-
+    public void stopMotors(){
+        for (DcMotor motor :this.motors) {
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setPower(0);
+        }
+    }
+    public void setState(boolean newState){
+        this.busy = newState;
+    }
 
     /*
         change the motors' power to the power function, this is used along
@@ -130,7 +162,7 @@ public class Commands  {
         it's goal, if it 1`did it stops all the command
      */
     public boolean canMove() {
-        return (Math.abs(getDist())>=50);
+        return (Math.abs(getDist())>=50)&&(runTime.seconds()<timeGoal);
     }
 
 

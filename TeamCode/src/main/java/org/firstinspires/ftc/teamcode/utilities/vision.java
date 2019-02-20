@@ -56,68 +56,36 @@ public class vision {
             tfod.activate();
         }
     }
-    public DetectedObject getPos() {
-        DetectedObject gold = new DetectedObject(-1,0);
-        DetectedObject silver1=new DetectedObject(-1,0);
-        DetectedObject silver2=new DetectedObject(-1,0);
+    public int getPos() {
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
-                if (updatedRecognitions.size() == 2 || updatedRecognitions.size() == 3) {
-                    this.runs++;
-                    for (int x = 0; x < updatedRecognitions.size(); x++) {
-                        Recognition recognition = updatedRecognitions.get(x);
-                        if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                            gold = new DetectedObject((int) recognition.getLeft()
-                                    ,this.calcAngle(recognition,AngleUnit.DEGREES));
-
-                        } else if (silver1.getPos() == -1) {
-                            silver1 = new DetectedObject((int) recognition.getLeft()
-                                    ,this.calcAngle(recognition,AngleUnit.DEGREES));
-                        } else {
-                            silver2 = new DetectedObject((int) recognition.getLeft()
-                                    ,this.calcAngle(recognition,AngleUnit.DEGREES));
-                        }
+                for (int x = 0; x < updatedRecognitions.size(); x++) {
+                    Recognition recognition = updatedRecognitions.get(x);
+                    if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
+                        return this.getSign(this.estimateAngle(recognition,
+                                AngleUnit.DEGREES));
                     }
-                    int goldMineralX = gold.getPos();
-                    int silverMineral1X = silver1.getPos();
-                    int silverMineral2X = silver2.getPos();
-                    if (updatedRecognitions.size() == 2) {
-                        if (goldMineralX == -1) {
-                            gold.setID(ObjectPositions.RIGHT);//the positions are only for identifications
-                            //if you only see 2 and the golden is not in view,
-                            // turn to teh silver piece that's on the far left
-                            gold.setAngle(-sign(silver1.getAngle())*25.0);
-                        } else if (goldMineralX < silverMineral1X) {
-                            gold.setID(ObjectPositions.CEMTER);
-                        }else {
-                            gold.setID(ObjectPositions.LEFT);
-                        }
-                    } else if (updatedRecognitions.size() == 3) {
-                        if(goldMineralX!=-1) {
-                            if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                                gold.setID(ObjectPositions.LEFT);
-                            } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                                gold.setID(ObjectPositions.CEMTER);
-
-                            }else{
-                                gold.setID(ObjectPositions.RIGHT);
-                            }
-                    }else{
-                            gold.setID(ObjectPositions.UNKNOWN);
-                        }
                 }
             }
         }
-    }
-        return gold;
+        return -1;
     }
     public void shutdown(){
         if(tfod!=null){
             tfod.shutdown();
         }
     }
-    public double calcAngle(Recognition R,AngleUnit angleUnit) {
+    public int getSign(double num){
+        if(num<10 && num > -10){
+            return 0;
+        }
+        if(num>10){
+            return 1;
+        }
+        return -1;
+    }
+    public double estimateAngle(Recognition R,AngleUnit angleUnit) {
         float focalLength = vuforia.getCameraCalibration().getFocalLength().getData()[0];
         double adjacentSideLength = focalLength;
 
@@ -145,7 +113,7 @@ public class vision {
     private void initTfod() {
         int tfodMonitorViewId = this.hw.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", this.hw.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();//TODO tfodMonitorViewId;
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();// tfodMonitorViewId;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }

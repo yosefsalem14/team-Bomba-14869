@@ -15,12 +15,16 @@ public class PID  {
     private double currentTime;
     private double previousTime;
     private double previousError;
-
+    private double P,I,D,DT;
     /*
         just a constructor, sets all the K values and initializes
         the other variables(mostly sets them to 0)
      */
     public PID(double KP,double KI,double KD){
+        this.P = 0;
+        this.I = 0;
+        this.D = 0;
+        this.DT = 0;
         this.KP = KP;
         this.KI = KI;
         this.KD = KD;
@@ -48,14 +52,15 @@ public class PID  {
     public double getPower(double error){
         errorSum += error;
         currentTime = System.currentTimeMillis();
-        double DT = currentTime - previousTime;
-        double P = error;
-        double I = errorSum;
-        double D = (error - previousError)/DT;
-        previousError = error;
-        previousTime = System.currentTimeMillis();
-
-        return P*KP + I*KI + D*KD;
+         this.DT= currentTime - previousError;
+        if(this.DT>=100) {
+            this.P = error;
+            this.I = errorSum;
+            this.D = (P - previousError) / DT;
+            previousError = error;
+            previousTime = System.currentTimeMillis();
+        }
+        return this.P*KP + this.I*KI + this.D*KD;
     }
 
 
@@ -92,6 +97,7 @@ public class PID  {
      */
     public void reset(){
         this.previousError = 0;
+        this.currentTime = 0;
         this.errorSum = 0;
         this.previousTime = 0;
     }

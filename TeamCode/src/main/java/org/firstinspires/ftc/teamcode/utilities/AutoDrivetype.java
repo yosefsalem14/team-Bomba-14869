@@ -15,5 +15,6 @@ public enum AutoDrivetype{
     INTAKE_MOVE,
     OPEN_SERVOS,
     CLOSE_SERVOS,
-    THROW_MARKER
+    ARMS,
+    LATCH
 }

@@ -158,7 +158,7 @@ public class Robot {
                 cubeIntakes[0] = this.hw.get(Servo.class,"cubeIntakeLeft");
                 cubeIntakes[1] = this.hw.get(Servo.class,"cubeIntakeRight");
                 cubeIntakes[0].setDirection(Servo.Direction.FORWARD);
-                cubeIntakes[1].setDirection(Servo.Direction.REVERSE);
+                cubeIntakes[1].setDirection(Servo.Direction.FORWARD);
             }catch(Exception e){
                 for(int i =0;i<cubeIntakes.length;i++){
                     cubeIntakes[i] = null;
@@ -171,8 +171,8 @@ public class Robot {
             try{
                 this.supportServos[0] = hw.get(Servo.class,"supportRight");
                 this.supportServos[1] = hw.get(Servo.class,"supportLeft");
-                supportServos[0].setDirection(Servo.Direction.REVERSE);
-                supportServos[1].setDirection(Servo.Direction.FORWARD);
+                supportServos[0].setDirection(Servo.Direction.FORWARD);
+                supportServos[1].setDirection(Servo.Direction.REVERSE);
             }catch(Exception e){
                 for(int i =0;i<supportServos.length;i++){
                     supportServos[i] = null;

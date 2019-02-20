@@ -2,22 +2,31 @@ package org.firstinspires.ftc.teamcode.utilities;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.vuforia.CameraDevice;
+import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.internal.vuforia.VuforiaTrackableContainer;
 import org.firstinspires.ftc.teamcode.Robot;
 import java.util.ArrayList;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+
 ///////////////////      ^_^      //////////////
 public abstract class Auto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private Robot robot;
-    private PID motorDist;
-    private PID motorTurn;
+    private PID movePID;
+    private PID turnPID;
+    private PID armPID;
+    private PID latchPID;
     private Orientation angles;
     private BNO055IMU imu;
     private vision objectDetector;
+    private int currentState = 0;
+    private int currentState1 = 0;
     final int ACCURACY = 10;
     /* get the IMU sensor
 
@@ -36,58 +45,89 @@ public abstract class Auto extends LinearOpMode {
     /* reset all the PID's used in the Auto class
      */
     private void reset(){
-        motorTurn.reset();
-        motorDist.reset();
+        movePID.reset();
+        turnPID.reset();
+        armPID.reset();
+        latchPID.reset();
     }
 
 
     /*
      initialize all the variables(including PIDs)
      */
-    private void initialize(){
+    private void tunePIDControllers(){
+        movePID = new PID(0.0004995,0.0,0.008877);
+        turnPID = new PID(0.0158878789,0.0,0.00777);
+        armPID = new PID(0.01654,0.0,0.0123);
+        latchPID = new PID(0.0865436,0.0,0.0546);
+    }
+    private void initializeWithIMU(){
         objectDetector = new vision(hardwareMap);
         angles=new Orientation();
         objectDetector.init();
         getIMU();
-        //TODO: Tune the PIDs!
-        motorDist = new PID(0.0004995,0.0,0.008877);
-        motorTurn = new PID(0.0158878789,0.0,0.00777);
-        //motorTurn = new PID(0.01849998542908,0.0,0.000598858);
+        tunePIDControllers();
     }
-
+    private void initializeWithoutIMU(){
+        angles=new Orientation();
+        tunePIDControllers();
+    }
     /*
             ***VISION FUNCTIONS***
      */
     private void act(){
         objectDetector.activate();
+        CameraDevice.getInstance().setFlashTorchMode(true);
     }
-    private ArrayList<DetectedObject> getDetections(double timeOut){
-        ArrayList<DetectedObject> objects = new ArrayList<>();
+    private ArrayList<Integer> getDetections(double timeOut){
+      ArrayList<Integer> objects = new ArrayList<>();
         //it goes to the last read when it fails
         int i = 0;
         runtime.reset();
         while(i<this.ACCURACY&&opModeIsActive()&&runtime.seconds()<=timeOut) {
-            DetectedObject nextPos = objectDetector.getPos();
-            if (nextPos.getID() != ObjectPositions.UNKNOWN) {
+            int nextPos = objectDetector.getPos();
+            if (nextPos!=-1) {
                 objects.add(nextPos);
                 i++;
             }
         }
         return objects;
     }
-    private void shut(){
-            objectDetector.shutdown();
+    /**
+     * returns the angle of the golden cube, stops running when the timer reaches
+     * the timeout!
+     * @param timeOut timer runs out when it reaches this
+     * @return the angle
+     */
+    public double getGoldPosition(double timeOut){
+        this.act();
+        ArrayList<Integer> detections = this.getDetections(timeOut);
+        double[] angles = new double[3];
+//        if(detections.size() == 0){
+//            return -1;
+//        }
+        for(int pos : detections){
+            angles[pos+1]++;
+        }
+        this.shut();
+        return getMaxIndex(angles)-1;
     }
-    private DetectedObject getMatchingId(ArrayList<DetectedObject> detections,int ID){
-        for(int i =0;i<detections.size();i++){
-            int currentValue = detections.get(i).getID().getIntVal();
-            if(currentValue == ID+1){
-                return detections.get(i);
+    private void shut(){
+        CameraDevice.getInstance().setFlashTorchMode(false);
+        objectDetector.shutdown();
+    }
+    public int getMaxIndex(double[] array){
+        double max=0 ;
+        int index=-1;
+        for(int i =0;i<array.length;i++){
+            if(array[i]>max){
+                max = array[i];
+                index = i;
             }
         }
-        return new DetectedObject(0,0);
-    }
+        return index;
 
+    }
     ///////////////////////////////////////////////////////
 
     /*
@@ -111,84 +151,80 @@ public abstract class Auto extends LinearOpMode {
         the robot will automatically stop moving if the command times out
         (if the timer count exceeds timeout)
      */
-    private void turn(Commands[] comms,double angle,double timeout) throws InterruptedException{
+    private void turn(Commands[] comms,double angle,double timeout,PID pid)  {
+        double dist;
+        double power;
+        boolean canRun;
         if (opModeIsActive()) {
             reset();
             //rest run time
             runtime.reset();
-
-
             //wait until the moto1rs reach their goal
             //or until the time runs out
-            boolean canRun;
-            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>=10;
-            while (opModeIsActive() &&canRun&&
-                        runtime.seconds() < timeout) {
-                    angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    angle = angle%360;
-                    angles.firstAngle = angles.firstAngle%360;
-
-                    double dist = (angle)-angles.firstAngle;
-
-                    double D = Math.abs(angle) - Math.abs(angles.firstAngle);
-                    if(Math.abs(dist)>180) {
-                        dist =  -dist;
-                    }
-                    double power = motorTurn.getPower(-dist);
-                    for(Commands command : comms){command.updatePower(power);}
-                    //work until all the motors stop or until the time runs out
-                telemetry.addData("angle",angles.firstAngle);
-                    telemetry.addData("Target angle",angle);
-                    telemetry.addData("dist", dist);
-                    telemetry.update();
-                    canRun = (Math.abs(dist)>0);
-             }
-             for(Commands command : comms){
-                command.stop();
-             }
-             Thread.sleep(100);
-            telemetry.addData("status","finished");
-            telemetry.update();
-        } }
-
-    private void turn(Commands[] comms, double Power, double angle,double timeout) throws InterruptedException{
-        if (opModeIsActive()) {
-            reset();
-            //rest run time
-            runtime.reset();
-
-
-            //wait until the moto1rs reach their goal
-            //or until the time runs out
-            boolean canRun;
-            canRun = Math.abs(Math.abs(angle)-Math.abs(angles.firstAngle))>=10;
-            while (opModeIsActive() &&canRun&&
-                    runtime.seconds() < timeout) {
+            do{
                 angles =imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 angle = angle%360;
-                angles.firstAngle = angles.firstAngle%360;
-
-                double dist = (angle)-angles.firstAngle;
-
-                double D = Math.abs(angle) - Math.abs(angles.firstAngle);
+                dist = (angle)-angles.firstAngle;
                 if(Math.abs(dist)>180) {
                     dist =  -dist;
                 }
-                double power = motorTurn.getPower(-dist);
-                for(Commands command : comms){command.updatePower(power,Power);}
+                power = pid.getPower(-dist);
+                for(Commands command : comms){command.updatePower(power);}
                 //work until all the motors stop or until the time runs out
                 telemetry.addData("angle",angles.firstAngle);
                 telemetry.addData("Target angle",angle);
                 telemetry.addData("dist", dist);
                 telemetry.update();
-                canRun = (Math.abs(D)>=0)||(power>0.1);
+                canRun = (Math.abs(dist)>5);
             }
-            for(Commands command : comms){
-                command.stop();
-            }
+            while (opModeIsActive() &&canRun&&
+                        runtime.seconds() < timeout) ;
+             for(Commands command : comms) {
+                 command.stop();
+             }
             telemetry.addData("status","finished");
             telemetry.update();
-        } }
+        }
+    }
+
+    private void turn(Commands[] comms, double powerLimit,
+                      double angle, double timeout, PID pid)   {
+        double dist;
+        double power;
+        boolean canRun;
+        if (opModeIsActive()) {
+            reset();
+            //rest run time
+            runtime.reset();
+            //wait until the moto1rs reach their goal
+            //or until the time runs out
+            do {
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                angle = angle % 360;
+                dist = (angle) - angles.firstAngle;
+                if (Math.abs(dist) > 180) {
+                    dist = -dist;
+                }
+                power = pid.getPower(-dist);
+                for (Commands command : comms) {
+                    command.updatePower(power, powerLimit);
+                }
+                //work until all the motors stop or until the time runs out
+                telemetry.addData("angle", angles.firstAngle);
+                telemetry.addData("Target angle", angle);
+                telemetry.addData("dist", dist);
+                telemetry.update();
+                canRun = (Math.abs(dist) > 5);
+            }
+            while (opModeIsActive() && canRun &&
+                    runtime.seconds() < timeout);
+            for (Commands command : comms) {
+                command.stop();
+            }
+            telemetry.addData("status", "finished");
+            telemetry.update();
+        }
+    }
 
 
     /*
@@ -198,83 +234,108 @@ public abstract class Auto extends LinearOpMode {
         the timeout variable
 
      */
-    private void move(Commands[] comms,double distance,double timeout)throws InterruptedException {
+    private void move(Commands[] comms, double distance,
+                      double timeout, PID pid)  {
+        double dist;
+        boolean canRun;
+        double power;
         if (opModeIsActive()) {
             reset();
             for(Commands command : comms) {
                 command.init(distance);
             }
-
+            do{
             //rest run time
             runtime.reset();
-
-
-
-            //Cait until the motors reach their goal
+            //Wait until the motors reach their goal
             //or until the time runs out
-            boolean canRun = true;
-                for(Commands command:comms) {
-                while (opModeIsActive() && canRun&&
-                        runtime.seconds() < timeout) {
-                            double dist = command.getDist();
-                            double power = motorDist.getPower(dist);
-                            for(Commands C : comms) {
-                                C.updatePower(power);
-                            }
-                            //work until all the motors stop or until the time runs out
-                            telemetry.addData("dist", dist);
-                            telemetry.update();
-                            canRun = command.canMove()||(power>0.1);
-                        }
-                    }
-
-
-            for(Commands command : comms){
-                command.stop();
+            dist = comms[0].getDist();
+            power = pid.getPower(dist);
+            for(Commands C : comms) {
+                C.updatePower(power);
             }
-            }
-        }
-
-    private void move(Commands[] comms, double Power, double distance,double timeout)throws InterruptedException {
-        if (opModeIsActive()) {
-            reset();
-            for(Commands command : comms) {
-                command.init(distance);
-            }
-
-            //rest run time
-            runtime.reset();
-
-
-
-            //Cait until the motors reach their goal
-            //or until the time runs out
-            boolean canRun = true;
-            for(Commands command:comms) {
-                while (opModeIsActive() && canRun&&
-                        runtime.seconds() < timeout) {
-                    double dist = command.getDist();
-                    double power = motorDist.getPower(dist);
-                    for(Commands C : comms) {
-                        C.updatePower(power,Power);
-                    }
-                    //work until all the motors stop or until the time runs out
-                    telemetry.addData("dist", dist);
-                    telemetry.update();
-                    canRun = command.canMove()||(power>0.1);
-                }
-            }
-
-
-            for(Commands command : comms){
-                command.stop();
-            }
-            Thread.sleep(100);
-            telemetry.addData("status","finished");
+            //work until all the motors stop or until the time runs out
+            telemetry.addData("dist", dist);
             telemetry.update();
+            canRun = comms[0].canMove()&&(power>0.1);
+            }
+            while (opModeIsActive() && canRun&&
+                   runtime.seconds() < timeout);
+
+            for(Commands command : comms){
+                command.stop();
+            }
         }
     }
 
+    private void move(Commands[] comms, double powerLimit,
+                      double distance, double timeout, PID pid){
+        double dist;
+        boolean canRun;
+        double power;
+        if (opModeIsActive()) {
+            reset();
+            for(Commands command : comms) {
+                command.init(distance);
+            }
+            do{
+                //rest run time
+                runtime.reset();
+                //Wait until the motors reach their goal
+                //or until the time runs out
+                dist = comms[0].getDist();
+                if(pid == null){
+                    power = 1;
+                }else {
+                    power = pid.getPower(dist);
+                }
+                for(Commands C : comms) {
+                    C.updatePower(power,powerLimit);
+                }
+                //work until all the motors stop or until the time runs out
+                telemetry.addData("dist", dist);
+                telemetry.update();
+                canRun = comms[0].canMove()&&(power>0.1);
+            }
+            while (opModeIsActive() && canRun&&
+                    runtime.seconds() < timeout);
+
+            for(Commands command : comms){
+                command.stop();
+            }
+        }
+    }
+
+
+    private void controlledMove(Commands[] comms, double powerLimit,
+                      double distance, double timeout, PID pid){
+        double dist;
+        double power;
+        for(Commands command : comms) {
+            command.init(distance,timeout);
+        }
+        do {
+            if(!(gamepad2.dpad_left||gamepad2.dpad_right||gamepad2.dpad_up)){
+                break;
+            }
+            dist = comms[0].getDist();
+            power = pid.getPower(dist);
+            for (Commands C : comms) {
+                C.updatePower(power, powerLimit);
+            }
+            //work until all the motors stop or until the time runs out
+            telemetry.addData("dist", dist);
+            telemetry.update();
+
+        }
+        while(comms[0].canMove());
+
+            reset();
+            for (Commands command : comms) {
+                command.stop();
+            }
+
+    }
     /*
         this is used in the move() function to check
         whether the one of the commands in the command array reached it's desired
@@ -285,6 +346,8 @@ public abstract class Auto extends LinearOpMode {
         has at least one encoder.
      */
     //////////THIS WILL ONLY GET USED WITH MORE THAN 1 ENCODER//////
+    // just don't use it it's not configured correctly this needs more work
+    @Deprecated
     private boolean isBusy(Commands comms[],int i){
         // checks if all the motors are busy
         if(i<comms.length)
@@ -298,16 +361,6 @@ public abstract class Auto extends LinearOpMode {
         opens the marker servos and throws the marker!
 
      */
-    private void throwMarker(){
-        //opens marker Servo to trow the marker into the depot
-        for(int i = 0; i < robot.supportServos.length;i++) {
-            if (robot.supportServos[i] != null) {
-                robot.supportServos[i].setPosition(0);
-            } else {
-                telemetry.addData("Error", "Marker Servo isn't connected");
-            }
-        }
-    }
 
     /*
         open the latching servos
@@ -357,41 +410,20 @@ public abstract class Auto extends LinearOpMode {
         this.robot = robot;
         robot.init(hardwareMap);
         robot.init2018Auto();
-        initialize();
+        initializeWithIMU();
+    }
+    public void initControlled(Robot robot){
+        this.robot = robot;
+        robot.init(hardwareMap);
+        {
+
+        }
+        robot.init2018Auto();
+        initializeWithoutIMU();
     }
 
 
 
-    /**
-     * returns the angle of the golden cube, stops running when the timer reaches
-     * the timeout!
-     * @param timeOut timer runs out when it reaches this
-     * @return the angle
-     */
-    public double getGoldPosition(double timeOut){
-        this.act();
-        ArrayList<DetectedObject> detections = this.getDetections(timeOut);
-        int[] counters = new int[3];
-        double GOLD_POS;
-        int maxCounter = 0;
-        int index = 0;
-        for(int i = 0;i<detections.size();i++){
-            int pos = detections.get(i).getID().getIntVal();
-            if(pos!=-1) {
-                counters[pos - 1]++;
-            }
-        }
-        for(int i = 0;i<counters.length;i++){
-            if(counters[i]>maxCounter){
-                maxCounter = counters[i];
-                index = i;
-            }
-        }
-        DetectedObject matching = getMatchingId(detections,index);
-        GOLD_POS = matching.getAngle();
-        this.shut();
-        return GOLD_POS;
-    }
 
     /**
      * takes an action and performs it
@@ -405,9 +437,6 @@ public abstract class Auto extends LinearOpMode {
             case CLOSE_SERVOS:
                 this.closeServos();
                 break;
-            case THROW_MARKER:
-                this.throwMarker();
-                break;
             default:
                 telemetry.addData("error","unknown command");
                 break;
@@ -422,22 +451,28 @@ public abstract class Auto extends LinearOpMode {
      * @param timeOut the action stops when the timer reaches this
      * @throws InterruptedException
      */
-    public void execute(AutoDrivetype movement, double goal, double timeOut)throws InterruptedException{
+    public void execute(AutoDrivetype movement,
+                        double goal, double timeOut){
         switch(movement){
             case ENCODER_MOVE:
-                this.move(this.robot.move,-goal,timeOut);
+                this.move(this.robot.move, -goal
+                        , timeOut, movePID);
                 break;
             case IMU_TURN:
-                this.turn(this.robot.turn,-goal,timeOut);
+                this.turn(this.robot.turn,
+                        -goal, timeOut, turnPID);
                 break;
             case ARM_MOVE:
-                this.move(this.robot.armMove,goal,timeOut);
+                this.move(this.robot.armMove,
+                        goal, timeOut, armPID);
                 break;
             case LATCH_MOVE:
-                this.move(this.robot.latchMove,goal,timeOut);
+                this.move(this.robot.latchMove, goal,
+                        timeOut, latchPID);
                 break;
             case INTAKE_MOVE:
-                this.move(this.robot.intakeMove,goal,timeOut);
+                this.move(this.robot.intakeMove, goal,
+                        timeOut, null);
                 break;
             default:
                 telemetry.addData("error","unknown command");
@@ -445,7 +480,10 @@ public abstract class Auto extends LinearOpMode {
         }
 
     }
+    {
 
+
+    }
     /**
      *
      * takes actions and performs them
@@ -455,16 +493,28 @@ public abstract class Auto extends LinearOpMode {
      * @param timeOut the action stops when the timer reaches this
      * @throws InterruptedException
      */
-    public void execute(AutoDrivetype movement, double power, double goal, double timeOut)throws InterruptedException{
+    public void execute(AutoDrivetype movement, double power,
+                        double goal, double timeOut) {
         switch(movement){
             case ENCODER_MOVE:
-                    this.move(this.robot.move, -Math.abs(power), goal, timeOut);
+                this.move(this.robot.move, power, -goal
+                        , timeOut, movePID);
                 break;
             case IMU_TURN:
-                this.turn(this.robot.turn, Math.abs(power), goal, timeOut);
+                this.turn(this.robot.turn, power,
+                        -goal, timeOut, turnPID);
                 break;
             case ARM_MOVE:
-                this.move(this.robot.armMove, Math.abs(power), goal, timeOut);
+                this.move(this.robot.armMove,power,
+                        goal, timeOut, armPID);
+                break;
+            case LATCH_MOVE:
+                this.move(this.robot.latchMove, goal,power,
+                        timeOut, latchPID);
+                break;
+            case INTAKE_MOVE:
+                this.move(this.robot.intakeMove, goal,power,
+                        timeOut, null);
                 break;
             default:
                 telemetry.addData("error","unknown command");
@@ -472,4 +522,24 @@ public abstract class Auto extends LinearOpMode {
         }
 
     }
+    public void goToPos(int state,AutoDrivetype type,double pos){
+
+        switch (type) {
+            case ARMS:
+                if(currentState!=state) {
+                    currentState=state;
+                    controlledMove(this.robot.armMove, 1,
+                            pos * currentState, 2, armPID);
+                }
+                break;
+                case LATCH:
+                    if(currentState1!=state) {
+                        currentState1=state;
+                        controlledMove(this.robot.latchMove, 1,
+                                -pos * currentState1, 2, latchPID);
+                    }
+                    break;
+        }
+    }
 }
+

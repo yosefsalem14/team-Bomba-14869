@@ -2,6 +2,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.teamcode.utilities.Auto;
+import org.firstinspires.ftc.teamcode.utilities.AutoDrivetype;
+import org.firstinspires.ftc.teamcode.utilities.Controller;
+
 import java.util.Arrays;
 import android.util.Log;
 /*
@@ -12,27 +18,33 @@ import android.util.Log;
 
 @TeleOp(name="rover movement13",group="movement")
 
-public class RoverMovement extends LinearOpMode {
+public class RoverMovement extends Auto {
     Robot rover = new Robot();
+    Controller[] ramper = new Controller[4];
+    Controller armRamper = new Controller(0.02199,0,0.002156);
     private double move = 0.0;
     private double turn = 0.0;
     @Override
     public void runOpMode(){//throws InterruptedException {
-        rover.init(hardwareMap);
+        initControlled(rover);
+        for(int i =0;i<rover.mainMotors.length;i++){
+            ramper[i] = new Controller(0.9,0,0.02156);
+            rover.mainMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
         //define controller input variables
             boolean latchOpen =      false;
             boolean cubeIntakesOpen= false;
             boolean support =        false;
-            double armMove =         0.0;
             double leftTrigger =     0.0;
             double com2DpadLeft =    0.0;
             double com2DpadRight =   0.0;
             double rightTrigger =    0.0;
+            double com2RightTrigger = 0.0;
+            double com2DpadUp =      0.0;
+            double armMove = 0.0;
             double com2LeftBumper =  0.0;
             double com2RightBumper = 0.0;
             double collect =         0.0;
-            double latchOn = 0.0;
-            double latchMove = 0.0;
         boolean XPressed;
         boolean YPressed;
         boolean APressed;
@@ -46,34 +58,27 @@ public class RoverMovement extends LinearOpMode {
 
             //get all the variables:
                 //parse the Dpad clicks
-                    latchOn = Int(gamepad2.dpad_up);
                 //parse the bumper clicks
-                    com2LeftBumper =  Int(gamepad2.left_bumper);
-                    com2RightBumper = Int(gamepad2.right_bumper);
-                    com2DpadRight = Int(gamepad2.dpad_right);
-                    com2DpadLeft = Int(gamepad2.dpad_left);
+                    com2LeftBumper =  toInt(gamepad2.left_bumper);
+                    com2RightBumper = toInt(gamepad2.right_bumper);
+                    com2DpadRight = toInt(gamepad2.dpad_right);
+                    com2DpadLeft = toInt(gamepad2.dpad_left);
+                    com2DpadUp = toInt(gamepad2.dpad_up);
+                    com2RightTrigger = Math.ceil(gamepad2.right_trigger);
+                    armMove = gamepad2.left_stick_y* rover.armPower;
                     XPressed = gamepad2.x;
                     YPressed = gamepad2.y;
                     APressed = gamepad2.a;
                 //parse the trigger pushes
-                    leftTrigger =   Math.pow(gamepad1.left_trigger,3);
-                    rightTrigger =  Math.pow(gamepad1.right_trigger,3);
+                    leftTrigger =   gamepad1.left_trigger;
+                    rightTrigger =  gamepad1.right_trigger;
 
 
                 //calculate the turn & strafe & move factor
 
-                    this.move =     (Math.pow(gamepad1.left_stick_y,5))*rover.movePower;
-                    this.turn =     (rightTrigger-leftTrigger)*rover.turnPower;
-                    double armY = -gamepad2.left_stick_y;
-                //calculate the arm & stetcher & collector move factor
-                    double armPower = rover.armPower;
-                    if(armY >= 0){
-                        armPower = rover.armPower;
-                    }else if(armY < 0){
-                        armPower = 0.2;
-                    }
-                    armMove = (armY*armPower) - (latchOn);
-                    collect = com2RightBumper - com2LeftBumper;
+                this.move =     gamepad1.left_stick_y*rover.movePower;
+                this.turn =     (rightTrigger-leftTrigger)*rover.turnPower;
+
                 //open and close the latches
                 boolean[] latches=servoSwitch(XPressed,latchOpen,onceLatches);
                 boolean[] intakes = servoSwitch(YPressed,cubeIntakesOpen,onceIntakes);
@@ -89,43 +94,35 @@ public class RoverMovement extends LinearOpMode {
              *
              */
             //calculate the specific motor power
-            double leftBack =   move - turn;
-            double leftFront =  move + turn;
-            double rightBack =  (move - (turn));
-            double rightFront = (move + (turn));
-            double[] powers = {leftBack, leftFront, rightBack, rightFront,};
+            double leftBack =   (move - turn);
+            double leftFront =  (move + turn);
+            double rightBack =  (move - turn);
+            double rightFront = (move + turn);
+            double[] powers = {leftBack, leftFront, rightBack, rightFront};
             normalizeInputs(powers);
 
             //do the movements:
-            if(armMove==0) {
-                rover.mainMotors[0].setPower(powers[0]);
-                rover.mainMotors[1].setPower(powers[1]);
-                rover.mainMotors[2].setPower(powers[2]);
-                rover.mainMotors[3].setPower(powers[3]);
-            }else{
-                rover.mainMotors[0].setPower(0);
-                rover.mainMotors[1].setPower(0);
-                rover.mainMotors[2].setPower(0);
-                rover.mainMotors[3].setPower(0);
-            }
-
+                for (int i = 0; i < rover.mainMotors.length; i++) {
+                        double currentPower = ramper[i].rampUp(powers[i], turn == 0);
+                        rover.mainMotors[i].setPower(currentPower);
+                }
 
 
             /*
               PICKING UP MECHANISM MOVEMENT
              */
-            //arm  movement
-
+            //arm  movement & latch movement
+            goToPos((int)-com2DpadUp, AutoDrivetype.ARMS,22);
+            goToPos((int)(com2DpadLeft - com2DpadRight), AutoDrivetype.LATCH,22);
             for (int i = 0; i < rover.armMotors.length; i++) {
-                    rover.armMotors[i].setPower(armMove);
+                    rover.armMotors[i].setPower(armRamper.rampUp(armMove,false));
             }
-
             //collector movement
+            collect = com2RightBumper - com2LeftBumper + com2RightTrigger*rover.collectPower;
             rover.collector.setPower(-collect *
                     rover.collectPower);
             for(int i =0;i<rover.latches.length;i++) {
                 if (latchOpen) {
-                    Log.i("entered","entered latch open");
                     if(i%2 == 0) {
                         rover.latches[i].setPosition(0);
                     }else{
@@ -143,14 +140,14 @@ public class RoverMovement extends LinearOpMode {
             for(int i =0;i<rover.cubeIntakes.length;i++) {
                 if (cubeIntakesOpen) {
                     if(i%2==0){
-                        rover.cubeIntakes[i].setPosition((0.0/180.0));
-                    }else
-                        rover.cubeIntakes[i].setPosition((20.0/180.0));
-                } else {
-                    if(i%2==0){
                         rover.cubeIntakes[i].setPosition((90.0/180.0));
                     }else
-                        rover.cubeIntakes[i].setPosition((120.0/180.0));
+                        rover.cubeIntakes[i].setPosition((0.0/180.0));
+                } else {
+                    if(i%2==0){
+                        rover.cubeIntakes[i].setPosition((0.0/180.0));
+                    }else
+                        rover.cubeIntakes[i].setPosition((90.0/180.0));
 
                 }
             }
@@ -158,9 +155,9 @@ public class RoverMovement extends LinearOpMode {
             for(int i =0;i<rover.supportServos.length;i++) {
                 if (support) {
                     if(i%2==0){
-                        rover.supportServos[i].setPosition((180.0/180.0));
+                        rover.supportServos[i].setPosition((90.0/180.0));
                     }else
-                        rover.supportServos[i].setPosition((180.0/180.0));
+                        rover.supportServos[i].setPosition((90.0/180.0));
 
                 } else {
                     if(i%2==0){
@@ -170,8 +167,6 @@ public class RoverMovement extends LinearOpMode {
                 }
             }
             //latchMotor move
-            latchMove = com2DpadRight - com2DpadLeft;
-            rover.latchMotor.setPower(latchMove * rover.latchPower);
 
             //output
 
@@ -201,10 +196,13 @@ public class RoverMovement extends LinearOpMode {
     }
     public void normalizeInputs(double[] powers){
         double[] clone = powers.clone();
+        for(int i =0;i<clone.length;i++){
+            clone[i] = Math.abs(clone[i]);
+        }
         Arrays.sort(clone);
-        if(clone[0]>1) {
+        if(Math.abs(clone[2])>=1) {
             for (int i = 0; i < powers.length; i++) {
-                powers[i] /= Math.abs(clone[0]);
+                powers[i] /= clone[2];
             }
         }
     }
@@ -225,16 +223,8 @@ public class RoverMovement extends LinearOpMode {
     public String formatString(double value){
         return (Math.abs(Math.floor(value*100)) + "%");
     }
-    public int Int(boolean bool){
+    public int toInt(boolean bool){
         return (bool ?  1:0);
-    }
-    public int sign(double num){
-        if(num>0){
-            return 1;
-        }else if(num<0){
-            return -1;
-        }
-        return 0;
     }
 }
 
