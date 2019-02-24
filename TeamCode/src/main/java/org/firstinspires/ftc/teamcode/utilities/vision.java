@@ -40,17 +40,7 @@ public class vision {
         }
     }
 
-    public int sign(double num){
-        if(num>0){
-            return 1;
-        }else if(num<0){
-            return -1;
-        }
-        return 0;
-    }
-    public int getIter(){
-        return this.runs;
-    }
+
     public void activate(){
         if (tfod != null) {
             tfod.activate();
@@ -89,7 +79,7 @@ public class vision {
         float focalLength = vuforia.getCameraCalibration().getFocalLength().getData()[0];
         double adjacentSideLength = focalLength;
 
-        double oppositeSideLength = ((R.getTop()+R.getBottom()) * 0.5f) - (0.5f * R.getImageHeight());
+        double oppositeSideLength = ((R.getTop()+R.getBottom()) * 0.5) - (0.5 * R.getImageHeight());
 
         double tangent = oppositeSideLength / adjacentSideLength;
         double angle = angleUnit.fromRadians(Math.atan(tangent));

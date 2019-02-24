@@ -446,7 +446,7 @@ public abstract class Auto extends LinearOpMode {
      * @param timeOut the action stops when the timer reaches this
      * @throws InterruptedException
      */
-    public void execute(AutoDrivetype movement,
+    public  void execute(AutoDrivetype movement,
                         double goal, double timeOut){
         switch(movement){
             case ENCODER_MOVE:
@@ -533,6 +533,9 @@ public abstract class Auto extends LinearOpMode {
                    -pos * currentState1, 20, latchPID);
                 }
                 break;
+            default:
+                telemetry.addData("error","unimplemented command");
+                telemetry.update();
         }
     }
 }

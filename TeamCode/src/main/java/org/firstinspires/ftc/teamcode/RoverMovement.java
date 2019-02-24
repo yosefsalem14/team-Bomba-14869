@@ -2,11 +2,15 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.utilities.PID;
 import org.firstinspires.ftc.teamcode.utilities.Auto;
 import org.firstinspires.ftc.teamcode.utilities.AutoDrivetype;
 import org.firstinspires.ftc.teamcode.utilities.Controller;
 import org.firstinspires.ftc.teamcode.utilities.Robot;
+
+import java.lang.annotation.ElementType;
 import java.util.Arrays;
 /*
     ///////main TeleOP class/////
@@ -14,41 +18,38 @@ import java.util.Arrays;
     this is almost done, just fix the comments!
  */
 
-@TeleOp(name="rover movement13",group="movement")
+@TeleOp(name="TELEOP",group="movement")
 
-public class RoverMovement extends Auto {
+ public class RoverMovement extends Auto {
     Robot rover = new Robot();
     Controller[] ramper = new Controller[4];
-    Controller armRamper = new Controller(0.02199,0,0.002156);
+    Controller armRamper = new Controller(new PID(0.0543 ,0,-0.769));
     private double move = 0.0;
     private double turn = 0.0;
     @Override
     public void runOpMode(){//throws InterruptedException {
         initControlled(rover);
         for(int i =0;i<rover.mainMotors.length;i++){
-            ramper[i] = new Controller(0.9,0,0.02156);
+            ramper[i] = new Controller();
             rover.mainMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         //define controller input variables
-            boolean latchOpen =      false;
-            boolean cubeIntakesOpen= false;
-            boolean support =        false;
-            double leftTrigger =     0.0;
-            double com2DpadLeft =    0.0;
-            double com2DpadRight =   0.0;
-            double rightTrigger =    0.0;
-            double com2RightTrigger = 0.0;
-            double com2DpadUp =      0.0;
-            double armMove = 0.0;
-            double com2LeftBumper =  0.0;
-            double com2RightBumper = 0.0;
-            double collect =         0.0;
-        boolean XPressed;
-        boolean YPressed;
-        boolean APressed;
-        boolean onceSupport = true;
-        boolean onceLatches = true;
-        boolean onceIntakes = true;
+        boolean latchOpen = false;
+        ElapsedTime TT = new ElapsedTime();
+        boolean ghostOpen = false;
+        boolean stopperOpen = false;
+        double leftTrigger = 0.0;
+        double com2DpadLeft = 0.0;
+        double com2DpadRight = 0.0;
+        double rightTrigger = 0.0;
+        double com2RightTrigger = 0.0;
+        double armMove = 0.0;
+        double com2LeftBumper = 0.0;
+        double com2RightBumper = 0.0;
+        double collect = 0.0;
+        boolean[] XPressed={false,false};
+        boolean[] YPressed={false,false};
+        boolean[] APressed={false,false};
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
@@ -61,12 +62,11 @@ public class RoverMovement extends Auto {
                     com2RightBumper = toInt(gamepad2.right_bumper);
                     com2DpadRight = toInt(gamepad2.dpad_right);
                     com2DpadLeft = toInt(gamepad2.dpad_left);
-                    com2DpadUp = toInt(gamepad2.dpad_up);
                     com2RightTrigger = Math.ceil(gamepad2.right_trigger);
-                    armMove = -gamepad2.left_stick_y* rover.armPower;
-                    XPressed = gamepad2.x;
-                    YPressed = gamepad2.y;
-                    APressed = gamepad2.a;
+                    armMove = norm(-gamepad2.left_stick_y*rover.armPower);
+                    XPressed[0] = gamepad2.x;
+                    YPressed[0] = gamepad2.y;
+                    APressed[0] = gamepad2.a;
                 //parse the trigger pushes
                     leftTrigger =   gamepad1.left_trigger;
                     rightTrigger =  gamepad1.right_trigger;
@@ -76,17 +76,17 @@ public class RoverMovement extends Auto {
 
                 this.move =     -gamepad1.left_stick_y*rover.movePower;
                 this.turn =     -(rightTrigger-leftTrigger)*rover.turnPower;
-
+                if(servoSwitch(XPressed)) {
+                    latchOpen = !latchOpen;
+                }
+                if(servoSwitch(YPressed)) {
+                    ghostOpen = !ghostOpen;
+                }
+                if(servoSwitch(APressed)) {
+                    stopperOpen = !stopperOpen;
+                }
                 //open and close the latches
-                boolean[] latches=servoSwitch(XPressed,latchOpen,onceLatches);
-                boolean[] intakes = servoSwitch(YPressed,cubeIntakesOpen,onceIntakes);
-                boolean[] Support = servoSwitch(APressed,support,onceSupport);
-                latchOpen =latches[0];
-                onceLatches = latches[1];
-                cubeIntakesOpen =intakes[0];
-                onceIntakes = intakes[1];
-                support = Support[0];
-                onceSupport = Support[1];
+
             /*
              * MAIN MOTOR MOVEMENT
              *
@@ -101,9 +101,9 @@ public class RoverMovement extends Auto {
 
             //do the movements:
                 for (int i = 0; i < rover.mainMotors.length; i++) {
-                        double currentPower = ramper[i].rampUp(powers[i], turn == 0);
+                        double currentPower = ramper[i].rampUp(powers[i], turn != 0);
                         if(rover.mainMotors[i]!=null)
-                        rover.mainMotors[i].setPower(currentPower);
+                        rover.mainMotors[i].setPower(currentPower + 0.5*(gamepad1.right_stick_x)*((i%2)*2 - 1));
                 }
 
 
@@ -111,11 +111,10 @@ public class RoverMovement extends Auto {
               PICKING UP MECHANISM MOVEMENT
              */
             //arm  movement & latch movement
-            goToPos((int)-com2DpadUp, AutoDrivetype.ARMS,22);
-            goToPos((int)(com2DpadLeft - com2DpadRight), AutoDrivetype.LATCH,22);
+            goToPos((int)(com2DpadRight - com2DpadLeft), AutoDrivetype.LATCH,22);
             for (int i = 0; i < rover.armMotors.length; i++) {
                     if(rover.armMotors[i]!=null)
-                    rover.armMotors[i].setPower(armRamper.rampUp(armMove,false));
+                    rover.armMotors[i].setPower(armRamper.rampUp(armMove));
             }
             //collector movement
             collect = com2RightBumper - com2LeftBumper + com2RightTrigger*rover.collectPower;
@@ -135,7 +134,7 @@ public class RoverMovement extends Auto {
             }
             if(rover.cubeIntakes[0]!=null&&rover.cubeIntakes!=null) {
                 for (int i = 0; i < rover.cubeIntakes.length; i++) {
-                    if (cubeIntakesOpen) {
+                    if (ghostOpen) {
                         rover.cubeIntakes[0].setPosition((90.0 / 180.0));
                         rover.cubeIntakes[1].setPosition((0.0 / 180.0));
                     } else {
@@ -147,10 +146,10 @@ public class RoverMovement extends Auto {
             }
             if(rover.supportServos[0]!=null&&rover.supportServos!=null) {
                 for (int i = 0; i < rover.supportServos.length; i++) {
-                    if (support) {
-                        rover.supportServos[i].setPosition((85.0 / 180.0));
+                    if (stopperOpen) {
+                        rover.supportServos[i].setPosition((10.0 / 180.0));
                     } else {
-                        rover.supportServos[i].setPosition((5 / 180.0));
+                        rover.supportServos[i].setPosition((85.0 / 180.0));
                     }
                 }
             }
@@ -194,19 +193,23 @@ public class RoverMovement extends Auto {
             }
         }
     }
-    public boolean[] servoSwitch(boolean in,boolean out,boolean once){
-
-        if(in){
-            if(once){
-                out = !out;
-                once = false;
-            }
-        }else{
-            once = true;
+    public boolean servoSwitch(boolean[] bools){
+        if(bools[0]&&!bools[1]){
+            bools[1] = bools[0];
+            return true;
         }
-        boolean[] output = {out,once};
-        return output;
-
+        bools[1] = bools[0];
+        return false;
+    }
+    public double norm(double num){
+        
+        if(num<=0.9&&num>0.1){
+            return 0.5;
+        }
+        if(num>=-0.9 &&num<-0.1){
+            return -0.5;
+        }
+        return num;
     }
     public String formatString(double value){
         return (Math.abs(Math.floor(value*100)) + "%");

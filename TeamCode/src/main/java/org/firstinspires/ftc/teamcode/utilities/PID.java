@@ -50,19 +50,23 @@ public class PID  {
         the right power
      */
     public double getPower(double error){
-        errorSum += error;
         currentTime = System.currentTimeMillis();
-         this.DT= currentTime - previousError;
-        if(this.DT>=100) {
+         this.DT= currentTime - previousTime;
+        if(this.DT>1) {
+            errorSum += error;
             this.P = error;
             this.I = errorSum;
-            this.D = (P - previousError) / DT;
+            this.D = (error - previousError) / DT;
             previousError = error;
             previousTime = System.currentTimeMillis();
         }
         return this.P*KP + this.I*KI + this.D*KD;
     }
-
+    public void set(PID pid){
+        this.KP = pid.KP;
+        this.KD = pid.KD;
+        this.KI = pid.KI;
+    }
 
 
 
@@ -79,7 +83,15 @@ public class PID  {
         return KD;
     }
 
-
+    public void setKP(double newV){
+        this.KP = newV;
+    }
+    public void setKI(double newV){
+        this.KI = newV;
+    }
+    public void getKD(double newV){
+        this.KD = newV;
+    }
 
     /*
         Change the K values, **MIGHT GET REMOVED**

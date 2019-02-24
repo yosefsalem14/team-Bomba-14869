@@ -20,7 +20,7 @@ public class Commands  {
     static final double     MAGIC_NUMBER         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/
             (WHEEL_DIAMETER_INCHES * 3.1415);
 
-    private boolean busy;
+    private boolean started;
     private DcMotor[] motors;
     private double power;
     private int direction = 0;
@@ -34,14 +34,14 @@ public class Commands  {
     public Commands(){
         this.power = 0;
         this.direction = 0;
-        this.busy = false;
+        this.started = false;
         this.runTime = new ElapsedTime();
         this.timeGoal = 0;
     }
     public Commands(DcMotor[] motors,double power,Direction D){
         this.motors = motors;
         this.power = power;
-        this.busy = false;
+        this.started = false;
         this.runTime = new ElapsedTime();
         this.timeGoal = 0;
         switch(D){
@@ -67,19 +67,19 @@ public class Commands  {
         setTargetDist() is used cause am lazy!
      */
     public void init(double dst,double timeGoal){
-        if(!busy) {
+        if(!started) {
             for (int i = 0; i < this.motors.length; i++) {
                 //reset the encoder, change the behaviour, calculate position
                 //then set the target position and change the mode
-                motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                int pos = motors[i].getCurrentPosition() + (int) ((dst) * MAGIC_NUMBER);
+                motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                int pos =  motors[i].getCurrentPosition() +(int) ((dst) * MAGIC_NUMBER);
                 motors[i].setTargetPosition(pos);
                 motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             }
             runTime.reset();
             this.timeGoal = timeGoal;
-            busy = true;
+            started = true;
         }
     }
     public void init(double dst){
@@ -123,13 +123,23 @@ public class Commands  {
     /*
         stop all the DcMotors that belong to this Command
      */
-    public void stop(){
+    public void pause(){
         for (DcMotor motor :this.motors) {
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             motor.setPower(0);
         }
-        busy = false;
-        timeGoal = 0;
+    }
+    public void stop(){
+        started = false;
+        for (DcMotor motor :this.motors) {
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setPower(0);
+        }
+        this.reset();
+    }
+    public void reset(){
+//        this.busy=false;
+//        this.timeGoal = 0;
     }
     public void stopMotors(){
         for (DcMotor motor :this.motors) {
@@ -138,7 +148,7 @@ public class Commands  {
         }
     }
     public void setState(boolean newState){
-        this.busy = newState;
+        this.started = newState;
     }
 
     /*

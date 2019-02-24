@@ -20,10 +20,11 @@ public class Auto2018 extends Auto {
         telemetry.addData("status","ready for start!");
         telemetry.update();
         waitForStart();
-        execute(AutoDrivetype.ENCODER_MOVE,20,50);
-        execute(AutoDrivetype.IMU_TURN,90,2);
-        execute(AutoDrivetype.IMU_TURN,-20,2);
-        execute(AutoDrivetype.LATCH_MOVE,1,10);
+        double gold = getGoldPosition(5);
+        while(opModeIsActive()){
+            telemetry.addData("gold os", gold);
+            telemetry.update();
+        }
     }
 
 }
