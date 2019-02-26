@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.Robot;
 
 import java.util.ArrayList;
 
@@ -54,8 +55,8 @@ public abstract class Auto extends LinearOpMode {
      initialize all the variables(including PIDs)
      */
     private void tunePIDControllers(){
-        movePID = new PID(0.0004995,0.0,0.008877);
-        turnPID = new PID(0.0158878789,0.0,0.00777);
+        movePID = new PID(0.0006995,0.0,0.008877);
+        turnPID = new PID(0.0258878789,0.0,0.00777);
         armPID = new PID(0.01654,0.0,0.0123);
         latchPID = new PID(0.0865436,0.0,0.0546);
     }
@@ -82,7 +83,7 @@ public abstract class Auto extends LinearOpMode {
         //it goes to the last read when it fails
         int i = 0;
         runtime.reset();
-        while(i<this.ACCURACY&&opModeIsActive()&&runtime.seconds()<=timeOut) {
+        while(i<this.ACCURACY&& opModeIsActive()&&runtime.seconds()<=timeOut) {
             int nextPos = objectDetector.getPos();
             if (nextPos!=-1) {
                 objects.add(nextPos);
@@ -116,7 +117,7 @@ public abstract class Auto extends LinearOpMode {
     }
     public int getMaxIndex(double[] array){
         double max=0 ;
-        int index=-1;
+        int index=0;
         for(int i =0;i<array.length;i++){
             if(array[i]>max){
                 max = array[i];
@@ -247,8 +248,14 @@ public abstract class Auto extends LinearOpMode {
             //rest run time
             //Wait until the motors reach their goal
             //or until the time runs out
+
             dist = comms[0].getDist();
-            power = pid.getPower(dist);
+                if(pid == null){
+                    power = 1;
+                }else {
+                    power = pid.getPower(dist);
+                }
+
             for(Commands C : comms) {
                 C.updatePower(power);
             }
@@ -276,9 +283,9 @@ public abstract class Auto extends LinearOpMode {
             for(Commands command : comms) {
                 command.init(distance);
             }
+            //rest run time
+            runtime.reset();
             do{
-                //rest run time
-                runtime.reset();
                 //Wait until the motors reach their goal
                 //or until the time runs out
                 dist = comms[0].getDist();
@@ -293,7 +300,7 @@ public abstract class Auto extends LinearOpMode {
                 //work until all the motors stop or until the time runs out
                 telemetry.addData("dist", dist);
                 telemetry.update();
-                canRun = comms[0].canMove()&&(power>0.1);
+                canRun = comms[0].canMove()&&(Math.abs(power)>0.05);
             }
             while (opModeIsActive() && canRun&&
                     runtime.seconds() < timeout);

@@ -71,8 +71,8 @@ public class Commands  {
             for (int i = 0; i < this.motors.length; i++) {
                 //reset the encoder, change the behaviour, calculate position
                 //then set the target position and change the mode
-                motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 motors[i].setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
                 int pos =  motors[i].getCurrentPosition() +(int) ((dst) * MAGIC_NUMBER);
                 motors[i].setTargetPosition(pos);
                 motors[i].setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -83,7 +83,6 @@ public class Commands  {
         }
     }
     public void init(double dst){
-            timeGoal = 500;
             for (int i = 0; i < this.motors.length; i++) {
                 //reset the encoder, change the behaviour, calculate position
                 //then set the target position and change the mode
@@ -123,12 +122,6 @@ public class Commands  {
     /*
         stop all the DcMotors that belong to this Command
      */
-    public void pause(){
-        for (DcMotor motor :this.motors) {
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            motor.setPower(0);
-        }
-    }
     public void stop(){
         started = false;
         for (DcMotor motor :this.motors) {
@@ -140,12 +133,6 @@ public class Commands  {
     public void reset(){
 //        this.busy=false;
 //        this.timeGoal = 0;
-    }
-    public void stopMotors(){
-        for (DcMotor motor :this.motors) {
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            motor.setPower(0);
-        }
     }
     public void setState(boolean newState){
         this.started = newState;

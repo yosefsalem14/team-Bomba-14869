@@ -53,7 +53,7 @@ public class vision {
                 for (int x = 0; x < updatedRecognitions.size(); x++) {
                     Recognition recognition = updatedRecognitions.get(x);
                     if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                        return this.getSign(this.estimateAngle(recognition,
+                        return getSign(this.estimateAngle(recognition,
                                 AngleUnit.DEGREES));
                     }
                 }
@@ -70,7 +70,7 @@ public class vision {
         if(num<10 && num > -10){
             return 0;
         }
-        if(num>10){
+        if(num<-10){
             return 1;
         }
         return -1;

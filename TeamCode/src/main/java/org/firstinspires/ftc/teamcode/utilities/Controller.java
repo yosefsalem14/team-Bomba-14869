@@ -9,7 +9,7 @@ public class Controller {
     private double currentPowerArm;
     public Controller(){
         this.moveRamper = new PID( 0.18,0,0);
-        this.turnRamper = new PID(0.8, 0.0, 0);
+        this.turnRamper = new PID(1, 0.0, -0.2);
         this.currentPowerMain = 0;
         this.currentPowerArm = 0;
     }
@@ -35,13 +35,21 @@ public class Controller {
 
         return this.currentPowerMain;
     }
-  public   double rampUp(double target){
+    public double useSmoothing(double input){
+        if(input>0) {
+            return 3*1*(1-input)*Math.pow(input,2)+1*Math.pow(input,3);
+        }
+        return -
+                .3*1*(1-input)*Math.pow(input,2)+1*Math.pow(input,3);
+    }
+      public   double rampUp(double target){
         if(Math.abs(currentPowerArm)<=0.001){
             moveRamper.reset();
             currentPowerArm=0;
         }
         double error = target - this.currentPowerArm;
         this.currentPowerArm += moveRamper.getPower(error) ;
+      Log.i("current arm power", "rampUp: " + this.currentPowerArm);
         return this.currentPowerArm;
     }
 

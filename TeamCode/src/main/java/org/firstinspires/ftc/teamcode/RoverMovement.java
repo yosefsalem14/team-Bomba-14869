@@ -8,9 +8,7 @@ import org.firstinspires.ftc.teamcode.utilities.PID;
 import org.firstinspires.ftc.teamcode.utilities.Auto;
 import org.firstinspires.ftc.teamcode.utilities.AutoDrivetype;
 import org.firstinspires.ftc.teamcode.utilities.Controller;
-import org.firstinspires.ftc.teamcode.utilities.Robot;
 
-import java.lang.annotation.ElementType;
 import java.util.Arrays;
 /*
     ///////main TeleOP class/////
@@ -23,7 +21,7 @@ import java.util.Arrays;
  public class RoverMovement extends Auto {
     Robot rover = new Robot();
     Controller[] ramper = new Controller[4];
-    Controller armRamper = new Controller(new PID(0.0543 ,0,-0.769));
+    Controller armRamper = new Controller(new PID(0.0843 ,0,0));
     private double move = 0.0;
     private double turn = 0.0;
     @Override
@@ -31,6 +29,7 @@ import java.util.Arrays;
         initControlled(rover);
         for(int i =0;i<rover.mainMotors.length;i++){
             ramper[i] = new Controller();
+            if(rover.mainMotors[i]!=null)
             rover.mainMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         //define controller input variables
@@ -63,7 +62,7 @@ import java.util.Arrays;
                     com2DpadRight = toInt(gamepad2.dpad_right);
                     com2DpadLeft = toInt(gamepad2.dpad_left);
                     com2RightTrigger = Math.ceil(gamepad2.right_trigger);
-                    armMove = norm(-gamepad2.left_stick_y*rover.armPower);
+                    armMove = -gamepad2.left_stick_y;
                     XPressed[0] = gamepad2.x;
                     YPressed[0] = gamepad2.y;
                     APressed[0] = gamepad2.a;
@@ -103,7 +102,7 @@ import java.util.Arrays;
                 for (int i = 0; i < rover.mainMotors.length; i++) {
                         double currentPower = ramper[i].rampUp(powers[i], turn != 0);
                         if(rover.mainMotors[i]!=null)
-                        rover.mainMotors[i].setPower(currentPower + 0.5*(gamepad1.right_stick_x)*((i%2)*2 - 1));
+                        rover.mainMotors[i].setPower(currentPower);// + 0.5*(gamepad1.right_stick_x)*((i%2)*2 - 1)
                 }
 
 
@@ -112,15 +111,18 @@ import java.util.Arrays;
              */
             //arm  movement & latch movement
             goToPos((int)(com2DpadRight - com2DpadLeft), AutoDrivetype.LATCH,22);
+            double pow=0;
             for (int i = 0; i < rover.armMotors.length; i++) {
                     if(rover.armMotors[i]!=null)
-                    rover.armMotors[i].setPower(armRamper.rampUp(armMove));
+                        pow = armRamper.useSmoothing(armRamper.rampUp(armMove));
+                        telemetry.addData("pow",pow);
+                        telemetry.update();
+                    rover.armMotors[i].setPower(pow - toInt(gamepad2.dpad_down));
             }
             //collector movement
             collect = com2RightBumper - com2LeftBumper + com2RightTrigger*rover.collectPower;
             if(rover.collector!=null)
-            rover.collector.setPower(-collect *
-                    rover.collectPower);
+            rover.collector.setPower(-collect);
             if(rover.latches[0]!=null&&rover.latches!=null) {
                 for (int i = 0; i < rover.latches.length; i++) {
                     if (latchOpen) {
@@ -147,9 +149,9 @@ import java.util.Arrays;
             if(rover.supportServos[0]!=null&&rover.supportServos!=null) {
                 for (int i = 0; i < rover.supportServos.length; i++) {
                     if (stopperOpen) {
-                        rover.supportServos[i].setPosition((10.0 / 180.0));
+                        rover.supportServos[i].setPosition((0.0 / 180.0));
                     } else {
-                        rover.supportServos[i].setPosition((85.0 / 180.0));
+                        rover.supportServos[i].setPosition((90.0 / 180.0));
                     }
                 }
             }
@@ -202,13 +204,13 @@ import java.util.Arrays;
         return false;
     }
     public double norm(double num){
-        
-        if(num<=0.9&&num>0.1){
-            return 0.5;
-        }
-        if(num>=-0.9 &&num<-0.1){
-            return -0.5;
-        }
+//
+//        if(num<0.9&&num>0.1){
+//            return 0.5;
+//        }
+//        if(num>-0.9 &&num<-0.1){
+//            return -0.5;
+//        }
         return num;
     }
     public String formatString(double value){
