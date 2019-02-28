@@ -26,7 +26,7 @@ public abstract class Auto extends LinearOpMode {
     private int currentState = 0;
 
     private int currentState1 = 0;
-    final int ACCURACY = 10;
+    final int ACCURACY = 15;
     /* get the IMU sensor
 
      */
@@ -55,8 +55,8 @@ public abstract class Auto extends LinearOpMode {
      initialize all the variables(including PIDs)
      */
     private void tunePIDControllers(){
-        movePID = new PID(0.0006995,0.0,0.008877);
-        turnPID = new PID(0.0258878789,0.0,0.00777);
+        movePID = new PID(0.0018995,0.0,0.009877);
+        turnPID = new PID(0.035, 0.0,0.02);
         armPID = new PID(0.01654,0.0,0.0123);
         latchPID = new PID(0.0865436,0.0,0.0546);
     }
@@ -85,7 +85,7 @@ public abstract class Auto extends LinearOpMode {
         runtime.reset();
         while(i<this.ACCURACY&& opModeIsActive()&&runtime.seconds()<=timeOut) {
             int nextPos = objectDetector.getPos();
-            if (nextPos!=-1) {
+            if (nextPos!=-2) {
                 objects.add(nextPos);
                 i++;
             }
@@ -105,9 +105,9 @@ public abstract class Auto extends LinearOpMode {
         if(detections.size() == 0){
             return -1;
         }
-        for(int pos : detections){
-            angles[pos+1]++;
-        }
+            for (int pos : detections) {
+                 angles[pos + 1]++;
+            }
         this.shut();
         return getMaxIndex(angles)-1;
     }
@@ -115,18 +115,18 @@ public abstract class Auto extends LinearOpMode {
         CameraDevice.getInstance().setFlashTorchMode(false);
         objectDetector.shutdown();
     }
-    public int getMaxIndex(double[] array){
-        double max=0 ;
-        int index=0;
-        for(int i =0;i<array.length;i++){
-            if(array[i]>max){
+    public int getMaxIndex(double[] array) {
+        double max = 0;
+        int index = 0;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > max) {
                 max = array[i];
                 index = i;
             }
         }
         return index;
-
     }
+
     ///////////////////////////////////////////////////////
 
     /*
@@ -174,7 +174,7 @@ public abstract class Auto extends LinearOpMode {
                 telemetry.addData("Target angle",angle);
                 telemetry.addData("dist", dist);
                 telemetry.update();
-                canRun = (Math.abs(dist)>5);
+                canRun = (Math.abs(dist)>1&&Math.abs(power)>0.05);
             }
             while (opModeIsActive() &&canRun&&
                         runtime.seconds() < timeout) ;
@@ -504,7 +504,7 @@ public abstract class Auto extends LinearOpMode {
                 break;
             case IMU_TURN:
                 this.turn(this.robot.turn, power,
-                        -goal, timeOut, turnPID);
+                        goal, timeOut, turnPID);
                 break;
             case ARM_MOVE:
                 this.move(this.robot.armMove,power,

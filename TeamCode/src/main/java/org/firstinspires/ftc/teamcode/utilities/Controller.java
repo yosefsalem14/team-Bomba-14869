@@ -49,7 +49,6 @@ public class Controller {
         }
         double error = target - this.currentPowerArm;
         this.currentPowerArm += moveRamper.getPower(error) ;
-      Log.i("current arm power", "rampUp: " + this.currentPowerArm);
         return this.currentPowerArm;
     }
 

@@ -110,13 +110,12 @@ import java.util.Arrays;
               PICKING UP MECHANISM MOVEMENT
              */
             //arm  movement & latch movement
-            goToPos((int)(com2DpadRight - com2DpadLeft), AutoDrivetype.LATCH,22);
+            goToPos((int)(com2DpadRight - com2DpadLeft), AutoDrivetype.LATCH,15);
             double pow=0;
             for (int i = 0; i < rover.armMotors.length; i++) {
                     if(rover.armMotors[i]!=null)
                         pow = armRamper.useSmoothing(armRamper.rampUp(armMove));
-                        telemetry.addData("pow",pow);
-                        telemetry.update();
+
                     rover.armMotors[i].setPower(pow - toInt(gamepad2.dpad_down));
             }
             //collector movement

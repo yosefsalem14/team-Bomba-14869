@@ -12,6 +12,11 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import java.util.List;
 
+import com.disnodeteam.dogecv.DogeCV;
+import com.disnodeteam.dogecv.OpenCVPipeline;
+import com.disnodeteam.dogecv.math.MathFTC;
+import com.disnodeteam.dogecv.scoring.DogeCVScorer;
+
 
 public class vision {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
@@ -47,19 +52,19 @@ public class vision {
         }
     }
     public int getPos() {
+        double gold = 0, silver1 = 0, silver2 = 0;
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             if (updatedRecognitions != null) {
                 for (int x = 0; x < updatedRecognitions.size(); x++) {
                     Recognition recognition = updatedRecognitions.get(x);
                     if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                        return getSign(this.estimateAngle(recognition,
-                                AngleUnit.DEGREES));
+                        return getSign(estimateAngle(recognition,AngleUnit.DEGREES));
                     }
                 }
             }
         }
-        return -1;
+        return -2;
     }
     public void shutdown(){
         if(tfod!=null){
@@ -67,19 +72,22 @@ public class vision {
         }
     }
     public int getSign(double num){
-        if(num<10 && num > -10){
-            return 0;
-        }
-        if(num<-10){
+        if(num<10){
             return 1;
         }
-        return -1;
+        if(num>10){
+            if(num<30){
+                return 0;
+            }
+            return -1;
+        }
+        return 0;
     }
     public double estimateAngle(Recognition R,AngleUnit angleUnit) {
         float focalLength = vuforia.getCameraCalibration().getFocalLength().getData()[0];
         double adjacentSideLength = focalLength;
 
-        double oppositeSideLength = ((R.getTop()+R.getBottom()) * 0.5) - (0.5 * R.getImageHeight());
+        double oppositeSideLength = ((R.getTop()+R.getBottom()) * 0.5) - (0.5 * R.getImageWidth());
 
         double tangent = oppositeSideLength / adjacentSideLength;
         double angle = angleUnit.fromRadians(Math.atan(tangent));
@@ -97,13 +105,14 @@ public class vision {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
         parameters.cameraDirection = CameraDirection.BACK;
+
         parameters.cameraMonitorFeedback = VuforiaLocalizer.Parameters.CameraMonitorFeedback.NONE;
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
     }
     private void initTfod() {
         int tfodMonitorViewId = this.hw.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", this.hw.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();// tfodMonitorViewId;
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);//tfodMonitorViewId ;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
