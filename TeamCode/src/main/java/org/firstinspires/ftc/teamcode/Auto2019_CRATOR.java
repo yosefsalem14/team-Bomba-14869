@@ -30,8 +30,14 @@ public class Auto2019_CRATOR extends Auto {
         execute(AutoDrivetype.ENCODER_MOVE,0.7,20 + Math.abs(gold)*2,4);
         execute(AutoDrivetype.ENCODER_MOVE,0.7,-12 + Math.abs(gold)*2,4);
         execute(AutoDrivetype.IMU_TURN,0.8,75,4);
-        execute(AutoDrivetype.ENCODER_MOVE,0.7,25 - gold*5,4);
-        execute(AutoDrivetype.IMU_TURN,0.8,130,84);
+        if(gold==1) {
+            execute(AutoDrivetype.ENCODER_MOVE, 0.7, 25, 4);
+        }else if(gold==0){
+            execute(AutoDrivetype.ENCODER_MOVE, 0.7, 32, 4);
+        }else{
+            execute(AutoDrivetype.ENCODER_MOVE, 0.7, 36, 4);
+        }
+        execute(AutoDrivetype.IMU_TURN,0.8,128,4);
         execute(AutoDrivetype.ENCODER_MOVE,0.7,35,4);
         execute(AutoDrivetype.INTAKE_MOVE,1,0.5);
         execute(AutoDrivetype.IMU_TURN,0.8,140,4);

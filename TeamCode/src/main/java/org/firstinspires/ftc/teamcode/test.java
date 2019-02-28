@@ -16,9 +16,9 @@ public class test extends Auto {
         telemetry.addData("status", "ready for start!");
         telemetry.update();
         waitForStart();
-        double gold = getGoldPosition(5);
         while (opModeIsActive()) {
-            telemetry.addData("gold pos", gold);
+            double gold = getGoldPosition(5);
+            telemetry.addData("gold angle", gold);
             telemetry.update();
         }
 

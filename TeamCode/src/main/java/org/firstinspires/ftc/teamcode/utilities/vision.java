@@ -51,7 +51,7 @@ public class vision {
             tfod.activate();
         }
     }
-    public int getPos() {
+    public double getPos() {
         double gold = 0, silver1 = 0, silver2 = 0;
         if (tfod != null) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
@@ -59,7 +59,7 @@ public class vision {
                 for (int x = 0; x < updatedRecognitions.size(); x++) {
                     Recognition recognition = updatedRecognitions.get(x);
                     if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                        return getSign(estimateAngle(recognition,AngleUnit.DEGREES));
+                        return estimateAngle(recognition,AngleUnit.DEGREES);
                     }
                 }
             }
@@ -70,18 +70,6 @@ public class vision {
         if(tfod!=null){
             tfod.shutdown();
         }
-    }
-    public int getSign(double num){
-        if(num<10){
-            return 1;
-        }
-        if(num>10){
-            if(num<30){
-                return 0;
-            }
-            return -1;
-        }
-        return 0;
     }
     public double estimateAngle(Recognition R,AngleUnit angleUnit) {
         float focalLength = vuforia.getCameraCalibration().getFocalLength().getData()[0];
@@ -112,7 +100,7 @@ public class vision {
     private void initTfod() {
         int tfodMonitorViewId = this.hw.appContext.getResources().getIdentifier(
             "tfodMonitorViewId", "id", this.hw.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);//tfodMonitorViewId ;
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();//tfodMonitorViewId ;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }

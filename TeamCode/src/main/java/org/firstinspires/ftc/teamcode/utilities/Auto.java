@@ -26,7 +26,7 @@ public abstract class Auto extends LinearOpMode {
     private int currentState = 0;
 
     private int currentState1 = 0;
-    final int ACCURACY = 15;
+    final int ACCURACY = 5;
     /* get the IMU sensor
 
      */
@@ -84,9 +84,9 @@ public abstract class Auto extends LinearOpMode {
         int i = 0;
         runtime.reset();
         while(i<this.ACCURACY&& opModeIsActive()&&runtime.seconds()<=timeOut) {
-            int nextPos = objectDetector.getPos();
+            double nextPos = (objectDetector.getPos());
             if (nextPos!=-2) {
-                objects.add(nextPos);
+                objects.add(normlaizeAngle(nextPos));
                 i++;
             }
         }
@@ -98,6 +98,11 @@ public abstract class Auto extends LinearOpMode {
      * @param timeOut timer runs out when it reaches this
      * @return the angle
      */
+    public double getGoldAngle(){
+        this.act();
+        double ans =objectDetector.getPos();
+        return ans;
+    }
     public double getGoldPosition(double timeOut){
         this.act();
         ArrayList<Integer> detections = this.getDetections(timeOut);
@@ -114,6 +119,18 @@ public abstract class Auto extends LinearOpMode {
     private void shut(){
         CameraDevice.getInstance().setFlashTorchMode(false);
         objectDetector.shutdown();
+    }
+    public int normlaizeAngle(double num){
+        if(num<15){
+            return 1;
+        }
+        if(num>15){
+            if(num<30){
+                return 0;
+            }
+            return -1;
+        }
+        return -1;
     }
     public int getMaxIndex(double[] array) {
         double max = 0;
